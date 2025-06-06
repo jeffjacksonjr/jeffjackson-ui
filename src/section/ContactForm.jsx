@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EnvelopeIcon, PhoneIcon, MapPinIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -308,7 +308,7 @@ export default function ContactForm() {
                     href="mailto:bookings@djguy.com"
                     className="text-purple-400 hover:underline"
                   >
-                    djjeffjacksonjr@gmail.com
+                    jefferyj829@yahoo.com
                   </a>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export default function ContactForm() {
                     href="tel:+1234567890"
                     className="text-purple-400 hover:underline"
                   >
-                    +1 (234) 567-890
+                    +1 (240) 388-7358
                   </a>
                 </div>
               </div>
@@ -343,7 +343,25 @@ export default function ContactForm() {
               <h4 className="text-xl font-semibold mb-4">Follow Me</h4>
               <div className="flex space-x-4">
                 <a
-                  href="#"
+                  href="https://www.facebook.com/Jeff.Jackson.Jr829"
+                  className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
+                >
+                  <span className="sr-only">Facebook</span>
+                  <svg
+                    className="h-6 w-6"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </a>
+                <a
+                  href="https://www.instagram.com/jeffjackson_jr"
                   className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
                 >
                   <span className="sr-only">Instagram</span>
@@ -374,7 +392,7 @@ export default function ContactForm() {
                     <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                   </svg>
                 </a>
-                <a
+                {/* <a
                   href="#"
                   className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
                 >
@@ -387,7 +405,7 @@ export default function ContactForm() {
                   >
                     <path d="M16.7 7.7v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.6 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.8v1.4l-1.4-.7-1.4.7V7.7l1.4-.7 1.4.7zm3.5 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zM21 9.4v1.4l-1.4-.7-1.4.7V9.4l1.4-.7L21 9.4zm-4.3 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.1v1.4l-1.4-.7-1.4.7V9.4l1.4-.7 1.4.7zm-3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.1v1.4L3 9.8l-1.4.7V9.1l1.4-.7 1.4.7zm0 4.9v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7z" />
                   </svg>
-                </a>
+                </a> */}
                 <a
                   href="#"
                   className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"

@@ -16,9 +16,9 @@ export default function Navbar() {
   return (
     <header className="bg-black text-white sticky top-0 z-50">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="text-2xl font-bold">
+        <a href='/' className="text-2xl font-bold">
           <span className="text-purple-500">DJ</span> Jeff Jackson
-        </div>
+        </a>
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-8">
