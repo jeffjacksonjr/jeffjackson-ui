@@ -277,6 +277,8 @@ export default function ContactForm() {
                 )}
               </div>
 
+              <p className='text-purple-400'>Deposits are non-refundable unless stated in the contract.</p>
+
               <button
                 type="submit"
                 disabled={isSubmitting}
