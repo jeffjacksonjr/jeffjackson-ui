@@ -15,8 +15,8 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-end">
             <div className="flex space-x-6 mb-4">
               <a
-                href="#"
-                className="text-gray-400 hover:text-blue-400 transition duration-300"
+                href="https://www.facebook.com/Jeff.Jackson.Jr829"
+                className="text-gray-400 hover:text-purple-400 transition duration-300"
               >
                 <span className="sr-only">Facebook</span>
                 <svg
@@ -33,7 +33,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/jeffjackson_jr"
                 className="text-gray-400 hover:text-purple-400 transition duration-300"
               >
                 <span className="sr-only">Instagram</span>
@@ -50,7 +50,7 @@ export default function Footer() {
                   />
                 </svg>
               </a>
-              <a
+              {/* <a
                 href="#"
                 className="text-gray-400 hover:text-purple-400 transition duration-300"
               >
@@ -63,7 +63,7 @@ export default function Footer() {
                 >
                   <path d="M16.7 7.7v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.6 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.8v1.4l-1.4-.7-1.4.7V7.7l1.4-.7 1.4.7zm3.5 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zM21 9.4v1.4l-1.4-.7-1.4.7V9.4l1.4-.7L21 9.4zm-4.3 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.1v1.4l-1.4-.7-1.4.7V9.4l1.4-.7 1.4.7zm-3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.1v1.4L3 9.8l-1.4.7V9.1l1.4-.7 1.4.7zm0 4.9v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7z" />
                 </svg>
-              </a>
+              </a> */}
               {/* <a
                 href="#"
                 className="text-gray-400 hover:text-purple-400 transition duration-300"
@@ -78,7 +78,7 @@ export default function Footer() {
                   <path d="M16.7 7.7v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.6 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.8v1.4l-1.4-.7-1.4.7V7.7l1.4-.7 1.4.7zm3.5 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zM21 9.4v1.4l-1.4-.7-1.4.7V9.4l1.4-.7L21 9.4zm-4.3 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.1v1.4l-1.4-.7-1.4.7V9.4l1.4-.7 1.4.7zm-3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.1v1.4L3 9.8l-1.4.7V9.1l1.4-.7 1.4.7zm0 4.9v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7z" />
                 </svg>
               </a> */}
-              <a
+              {/* <a
                 href="#"
                 className="text-gray-400 hover:text-purple-400 transition duration-300"
               >
@@ -95,7 +95,7 @@ export default function Footer() {
                     clipRule="evenodd"
                   />
                 </svg>
-              </a>
+              </a> */}
             </div>
 
             <p className="text-gray-400 text-sm">

@@ -1,14 +1,21 @@
 import { useState } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import djPerformingAtFestival from "../images/Festival.jpeg";
+import clubNightPerformance from "../images/ClubNight.png";
+import crowdDancing from "../images/CrowdDancing.jpeg";
+import dJBoothSetup from "../images/DJBoothSetup.jpeg";
+import sunSet from "../images/Sunset.png";
+import backStageMoment from "../images/BackStageMoment.jpeg";
+
 
 export default function Gallery() {
   const images = [
-    { id: 1, src: '/images/gallery1.jpg', alt: 'DJ performing at festival' },
-    { id: 2, src: '/images/gallery2.jpg', alt: 'Club night performance' },
-    { id: 3, src: '/images/gallery3.jpg', alt: 'Crowd dancing' },
-    { id: 4, src: '/images/gallery4.jpg', alt: 'DJ booth setup' },
-    { id: 5, src: '/images/gallery5.jpg', alt: 'Sunset festival' },
-    { id: 6, src: '/images/gallery6.jpg', alt: 'Backstage moment' },
+    { id: 1, src: djPerformingAtFestival, alt: 'DJ performing at festival' },
+    { id: 2, src: crowdDancing, alt: 'Club night performance' },
+    { id: 3, src: clubNightPerformance, alt: 'Crowd dancing' },
+    { id: 4, src: dJBoothSetup, alt: 'DJ booth setup' },
+    { id: 5, src: sunSet, alt: 'Sunset festival' },
+    { id: 6, src: backStageMoment, alt: 'Backstage moment' },
   ];
 
   const [selectedImage, setSelectedImage] = useState(null);

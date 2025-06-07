@@ -1,52 +1,52 @@
 export default function MusicEvents() {
-  const mixes = [
-    {
-      title: "Summer Vibes 2023",
-      genre: "House/Techno",
-      date: "June 2025",
-      link: "#",
-      image: "/mix-cover1.jpg"
-    },
-    {
-      title: "Night Drive",
-      genre: "Deep House",
-      date: "April 2023",
-      link: "#",
-      image: "/mix-cover2.jpg"
-    },
-    {
-      title: "Club Essentials",
-      genre: "Tech House",
-      date: "February 2023",
-      link: "#",
-      image: "/mix-cover3.jpg"
-    }
-  ];
+  // const mixes = [
+  //   {
+  //     title: "Summer Vibes 2023",
+  //     genre: "House/Techno",
+  //     date: "June 2025",
+  //     link: "#",
+  //     image: "/mix-cover1.jpg"
+  //   },
+  //   {
+  //     title: "Night Drive",
+  //     genre: "Deep House",
+  //     date: "April 2023",
+  //     link: "#",
+  //     image: "/mix-cover2.jpg"
+  //   },
+  //   {
+  //     title: "Club Essentials",
+  //     genre: "Tech House",
+  //     date: "February 2023",
+  //     link: "#",
+  //     image: "/mix-cover3.jpg"
+  //   }
+  // ];
 
   const events = [
-    {
-      venue: "Electric Paradise",
-      location: "Miami, USA",
-      date: "July 15, 2025",
-      ticketLink: "#"
-    },
-    {
-      venue: "Neon Nights Club",
-      location: "Florida, USA",
-      date: "August 5, 2025",
-      ticketLink: "#"
-    },
-    {
-      venue: "Bass Drop Festival",
-      location: "Texas, USA",
-      date: "September 2, 2026",
-      ticketLink: "#"
-    }
+    // {
+    //   venue: "Electric Paradise",
+    //   location: "Miami, USA",
+    //   date: "July 15, 2025",
+    //   ticketLink: "#"
+    // },
+    // {
+    //   venue: "Neon Nights Club",
+    //   location: "Florida, USA",
+    //   date: "August 5, 2025",
+    //   ticketLink: "#"
+    // },
+    // {
+    //   venue: "Bass Drop Festival",
+    //   location: "Texas, USA",
+    //   date: "September 2, 2026",
+    //   ticketLink: "#"
+    // }
   ];
 
   return (
     <>
-    <section id="music" className="py-20 bg-gray-900 text-white">
+    {/* <section id="music" className="py-20 bg-gray-900 text-white">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
           Music & <span className="text-purple-400">Events</span>
@@ -82,13 +82,13 @@ export default function MusicEvents() {
         </div>
         </div>
 
-        </section>
+        </section> */}
 
-        <section id="events" className="py-20 bg-black text-white">
+        <section id="events" className="py-20 bg-black h-screen text-white">
       <div className="container mx-auto px-6">
         
         <div>
-          <h3 className="text-2xl font-semibold mb-8 text-center" id="#events">Upcoming Events</h3>
+          <h3 className="text-2xl font-semibold mb-8 text-center max-h-screen" id="#events">Upcoming <span className="text-purple-400">Events</span></h3>
           <div className="max-w-3xl mx-auto">
             {events.map((event, index) => (
               <div key={index} className="bg-gray-900 rounded-lg p-6 mb-4 last:mb-0 flex flex-col md:flex-row justify-between items-center">
@@ -107,6 +107,12 @@ export default function MusicEvents() {
                 </a>
               </div>
             ))}
+            {events.length === 0 && 
+            <div className="bg-gray-900 rounded-lg p-6 mb-4 last:mb-0 flex flex-col md:flex-row justify-center items-center">
+                <div className="mb-4 md:mb-0">
+                  <center className="text-xl font-bold">No events at the moment</center>
+                  {/* <p className="text-purple-300">{event.location}</p> */}
+                </div> </div> }
           </div>
         </div>
         </div>
