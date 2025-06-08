@@ -45,7 +45,7 @@ export default function BookingWizard() {
 
   const isWeekend = (date) => {
     if (!date) return false;
-    const day = new Date(date).getDay();
+    const day = date.getDay(); 
     return day === 0 || day === 6;
   };
 
@@ -94,11 +94,11 @@ export default function BookingWizard() {
 function DateSelectionStep({ onSelectDate }) {
   const [selectedDate, setSelectedDate] = useState(null);
   
-  // Generate next 90 days for selection
+  // Generate next 90 days for selection (as local dates without time)
   const availableDates = Array.from({ length: 90 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() + i);
-    return date;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   });
 
   return (
@@ -106,19 +106,19 @@ function DateSelectionStep({ onSelectDate }) {
       <h2 className="text-2xl font-bold mb-6">Select a Date</h2>
       <div className="grid grid-cols-3 gap-4">
         {availableDates.map((date) => {
-          const dateStr = date.toISOString().split('T')[0];
+          const dateKey = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
           const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
           const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           
           return (
             <button
-              key={dateStr}
+              key={dateKey}
               onClick={() => {
-                setSelectedDate(dateStr);
-                onSelectDate(dateStr);
+                setSelectedDate(date);
+                onSelectDate(date);
               }}
               className={`p-4 rounded-lg border ${
-                selectedDate === dateStr 
+                selectedDate && selectedDate.getTime() === date.getTime()
                   ? 'border-purple-500 bg-purple-900' 
                   : 'border-gray-700 hover:border-purple-400'
               }`}
