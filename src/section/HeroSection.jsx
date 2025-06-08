@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types'; // Add this line
 
 export default function HeroSection() {
   const [displayText, setDisplayText] = useState('');
   const fullText = 'Jeff Jackson';
   const [isAnimating, setIsAnimating] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let currentIndex = 0;
-    const typingSpeed = 150; // milliseconds between letters
-    // const pauseAtEnd = 3000; // milliseconds to pause when complete
+    const typingSpeed = 150;
 
     const typeWriter = () => {
       if (currentIndex < fullText.length) {
@@ -19,7 +21,7 @@ export default function HeroSection() {
         setIsAnimating(false);
       }
     };
-    // Start the animation after a brief delay
+
     const startDelay = setTimeout(typeWriter, 500);
     return () => clearTimeout(startDelay);
   }, []);
@@ -42,7 +44,10 @@ export default function HeroSection() {
           Spinning the hottest tracks and creating unforgettable experiences
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <button href="#contact" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105">
+          <button 
+            onClick={() => navigate('/book-now')} 
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+          >
             Book Now
           </button>
         </div>
@@ -64,3 +69,7 @@ export default function HeroSection() {
     </section>
   );
 }
+
+HeroSection.propTypes = {
+  navigate: PropTypes.func
+};
