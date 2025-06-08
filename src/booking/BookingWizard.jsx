@@ -354,7 +354,49 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm }) {
       <h2 className="text-2xl font-bold mb-6">Complete Your Booking</h2>
       
       {/* Booking details display */}
-      {/* ... */}
+      <div className="mb-8">
+        <h3 className="font-bold mb-2">Booking Details</h3>
+        <div className="bg-gray-800 p-4 rounded-lg">
+          <p>Event DJ</p>
+          <p>
+            {new Date(date).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            })} at {time}
+          </p>
+          <p>Client's place</p>
+          <p>DJ Jeff Jackson Jr</p>
+        </div>
+      </div>
+      
+      <div className="mb-8">
+        <h3 className="font-bold mb-2">Client Details</h3>
+        <div className="bg-gray-800 p-4 rounded-lg">
+          <p>{clientDetails.name}</p>
+          <p>{clientDetails.email}</p>
+          <p>{clientDetails.phone}</p>
+          <p>{clientDetails.street}</p>
+          {clientDetails.apt && <p>{clientDetails.apt}</p>}
+          <p>{clientDetails.city}, {clientDetails.state}</p>
+        </div>
+      </div>
+      
+      <div className="mb-8 text-sm text-gray-400">
+        <p className="mb-4">
+          By completing your booking, you agree to receive related SMS notifications.
+        </p>
+        
+        <p className="mb-4">
+          <strong>Payment details required</strong><br />
+          You'll be asked to add your payment details for this booking. You won't be charged now, 
+          but we need it on file for any future charges for this order.
+        </p>
+        
+        <p className="text-purple-400 mb-4">
+          <a href="#">View Policy</a>
+        </p>
+      </div>
       
       <div className="grid grid-cols-2 gap-4">
         <button
