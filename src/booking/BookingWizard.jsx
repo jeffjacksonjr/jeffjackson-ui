@@ -18,7 +18,7 @@ export default function BookingWizard() {
   
   // Weekday vs weekend availability
   const weekdayTimes = ['5:00 PM', '7:00 PM', '9:00 PM'];
-  const weekendTimes = ['8.00 AM','10.00 AM','12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM'];
+  const weekendTimes = ['8:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM'];
   
   const navigate = useNavigate();
 
@@ -137,6 +137,44 @@ function DateSelectionStep({ onSelectDate }) {
 function TimeSelectionStep({ date, times, onSelectTime, onBack }) {
   const [selectedTime, setSelectedTime] = useState(null);
   
+  // Check if the selected date is today
+  const isToday = (selectedDate) => {
+    const today = new Date();
+    return (
+      selectedDate.getDate() === today.getDate() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // Filter times for today to only show future slots
+  const getAvailableTimes = () => {
+    if (!isToday(new Date(date))) {
+      return times; // Return all times for future dates
+    }
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    return times.filter(time => {
+      // Parse the time string (e.g., "2:00 PM")
+      const [timePart, period] = time.split(' ');
+      let [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      // Compare with current time
+      if (hours > currentHour) return true;
+      if (hours === currentHour) return minutes > currentMinute;
+      return false;
+    });
+  };
+
+  const availableTimes = getAvailableTimes();
+
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -160,22 +198,28 @@ function TimeSelectionStep({ date, times, onSelectTime, onBack }) {
       <p className="text-gray-400 mb-6">Select a time slot</p>
       
       <div className="grid grid-cols-2 gap-4">
-        {times.map((time) => (
-          <button
-            key={time}
-            onClick={() => {
-              setSelectedTime(time);
-              onSelectTime(time);
-            }}
-            className={`p-4 rounded-lg border ${
-              selectedTime === time 
-                ? 'border-purple-500 bg-purple-900' 
-                : 'border-gray-700 hover:border-purple-400'
-            }`}
-          >
-            {time}
-          </button>
-        ))}
+        {availableTimes.length > 0 ? (
+          availableTimes.map((time) => (
+            <button
+              key={time}
+              onClick={() => {
+                setSelectedTime(time);
+                onSelectTime(time);
+              }}
+              className={`p-4 rounded-lg border ${
+                selectedTime === time 
+                  ? 'border-purple-500 bg-purple-900' 
+                  : 'border-gray-700 hover:border-purple-400'
+              }`}
+            >
+              {time}
+            </button>
+          ))
+        ) : (
+          <div className="col-span-2 text-center py-8 text-gray-400">
+            No available time slots left for today
+          </div>
+        )}
       </div>
       
       <div className="mt-8 p-4 bg-gray-800 rounded-lg">
