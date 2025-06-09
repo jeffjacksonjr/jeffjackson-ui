@@ -4,6 +4,7 @@ import Footer from "./section/Footer";
 import Home from './home/Home';
 import BookingWizard from './booking/BookingWizard'
 import LoginPage from './login/LoginPage'
+import AdminDashboard from './login/AdminDashboard';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path= "/" element={<Home/>}/>
       <Route path="/book-now" element={<BookingWizard/>} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/dashboard" element={<AdminDashboard/>} />
     </Routes>
     <Footer/>
     </>
