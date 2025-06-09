@@ -93,9 +93,10 @@ export default function BookingWizard() {
 // Date Selection Component
 function DateSelectionStep({ onSelectDate }) {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [loadDate, setLoadDate] = useState(30);
   
-  // Generate next 90 days for selection (as local dates without time)
-  const availableDates = Array.from({ length: 90 }, (_, i) => {
+  // Generate next 30 days for selection (as local dates without time)
+  const availableDates = Array.from({ length: loadDate }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() + i);
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -128,6 +129,15 @@ function DateSelectionStep({ onSelectDate }) {
             </button>
           );
         })}
+      </div>
+      
+      <div className="flex justify-center mt-6">
+        <button 
+          onClick={() => setLoadDate(loadDate + 30)} 
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+        >
+          See more
+        </button>
       </div>
     </div>
   );

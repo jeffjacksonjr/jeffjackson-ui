@@ -10,8 +10,8 @@ import backStageMoment from "../images/BackStageMoment.jpeg";
 
 export default function Gallery() {
   const images = [
-    { id: 1, src: djPerformingAtFestival, alt: 'DJ performing at festival' },
-    { id: 2, src: crowdDancing, alt: 'Club night performance' },
+    { id: 1, src: djPerformingAtFestival, alt: 'Club night performance' },
+    { id: 2, src: crowdDancing, alt: 'DJ performing at festival' },
     { id: 3, src: clubNightPerformance, alt: 'Crowd dancing' },
     { id: 4, src: dJBoothSetup, alt: 'DJ booth setup' },
     { id: 5, src: sunSet, alt: 'Sunset festival' },

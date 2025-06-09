@@ -3,6 +3,7 @@ import Navbar from "./navbar/Navbar";
 import Footer from "./section/Footer";
 import Home from './home/Home';
 import BookingWizard from './booking/BookingWizard'
+import LoginPage from './login/LoginPage'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Route path= "*" element={<Home/>}/>
       <Route path= "/" element={<Home/>}/>
       <Route path="/book-now" element={<BookingWizard/>} />
+      <Route path="/login" element={<LoginPage />} />
     </Routes>
     <Footer/>
     </>
