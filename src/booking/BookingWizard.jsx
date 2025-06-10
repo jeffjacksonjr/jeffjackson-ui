@@ -9,6 +9,7 @@ export default function BookingWizard() {
     name: '',
     email: '',
     phone: '',
+    eventType: '',
     street: '',
     apt: '',
     city: '',
@@ -269,7 +270,6 @@ function ClientDetailsStep({ date, time, clientDetails, onChange, onSubmit, onBa
       <h2 className="text-2xl font-bold mb-6">Client Details</h2>
       <p className="mb-6">Tell us a bit about yourself</p>
       
-      {/* <p className="text-purple-400 mb-6">Already have an account? Log In for faster booking.</p> */}
       <div className="max-w-2xl mx-auto">
       <form onSubmit={onSubmit}>
         <div className="space-y-4">
@@ -315,6 +315,26 @@ function ClientDetailsStep({ date, time, clientDetails, onChange, onSubmit, onBa
                 className="flex-1 bg-gray-800 border border-gray-700 rounded-r-lg px-4 py-3"
               />
             </div>
+          </div>
+
+          {/* Add Event Type field here */}
+          <div>
+            <label className="block mb-1">Event Type *</label>
+            <select
+              name="eventType"
+              value={clientDetails.eventType || ''}
+              onChange={onChange}
+              required
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+            >
+              <option value="">Select an option</option>
+              <option value="Wedding">Wedding</option>
+              <option value="Corporate">Corporate Event</option>
+              <option value="Club">Club Night</option>
+              <option value="Festival">Festival</option>
+              <option value="Private">Private Party</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
           
           <div>
@@ -395,35 +415,47 @@ function ClientDetailsStep({ date, time, clientDetails, onChange, onSubmit, onBa
 function CheckoutStep({ date, time, clientDetails, onBack, onConfirm }) {
   return (
     <div>
-      <button 
+      <button
         onClick={onBack}
         className="flex items-center text-purple-400 mb-4"
       >
-        <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-5 h-5 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
         Back to details
       </button>
-      
+
       <h2 className="text-2xl font-bold mb-6">Complete Your Booking</h2>
-      
+
       {/* Booking details display */}
       <div className="mb-8">
         <h3 className="font-bold mb-2">Booking Details</h3>
         <div className="bg-gray-800 p-4 rounded-lg">
-          <p>Event DJ</p>
+          <p>Event DJ - {clientDetails.eventType}</p>{" "}
+          {/* Add event type here */}
           <p>
-            {new Date(date).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric'
-            })} at {time}
+            {new Date(date).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}{" "}
+            at {time}
           </p>
           <p>Client's place</p>
           <p>DJ Jeff Jackson Jr</p>
         </div>
       </div>
-      
+
       <div className="mb-8">
         <h3 className="font-bold mb-2">Client Details</h3>
         <div className="bg-gray-800 p-4 rounded-lg">
@@ -432,34 +464,33 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm }) {
           <p>{clientDetails.phone}</p>
           <p>{clientDetails.street}</p>
           {clientDetails.apt && <p>{clientDetails.apt}</p>}
-          <p>{clientDetails.city}, {clientDetails.state}</p>
+          <p>
+            {clientDetails.city}, {clientDetails.state}
+          </p>
         </div>
       </div>
-      
+
       <div className="mb-8 text-sm text-gray-400">
+        {/* <p className="mb-4">
+          By completing your booking, you agree to receive related SMS
+          notifications.
+        </p> */}
+
         <p className="mb-4">
-          By completing your booking, you agree to receive related SMS notifications.
+          <strong>Payment details required</strong>
+          <br />
+          You'll be asked to add your payment details for this booking. You
+          won't be charged now, but we need it on file for any future charges
+          for this order.
         </p>
-        
-        <p className="mb-4">
-          <strong>Payment details required</strong><br />
-          You'll be asked to add your payment details for this booking. You won't be charged now, 
-          but we need it on file for any future charges for this order.
-        </p>
-        
-        <p className="text-purple-400 mb-4">
+
+        {/* <p className="text-purple-400 mb-4">
           <a href="#">View Policy</a>
-        </p>
+        </p> */}
       </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={onBack}
-          className="bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-medium"
-        >
-          Add to Cart
-        </button>
-        
+
+      <div className="grid grid-cols-1">
+
         <button
           onClick={onConfirm}
           className="bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium"

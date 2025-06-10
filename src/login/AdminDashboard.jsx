@@ -19,10 +19,24 @@ export default function AdminDashboard() {
     time: "",
     reason: "",
   });
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    isOpen: false,
+    id: null,
+  });
+  const [approvalConfirmation, setApprovalConfirmation] = useState({
+    isOpen: false,
+    id: null,
+  });
+  const [denyDialog, setDenyDialog] = useState({
+    isOpen: false,
+    enquiry: null,
+    date: "",
+    time: "",
+    message: "",
+  });
 
   // Fetch data on component mount
   useEffect(() => {
-    // Replace with actual API calls
     fetchBlockedDates();
     fetchBookings();
     fetchEnquiries();
@@ -30,7 +44,6 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchBlockedDates = async () => {
-    // Mock data - replace with API call
     setBlockedDates([
       { id: 1, date: "2023-06-10", time: "2:00 PM", reason: "Personal" },
       { id: 2, date: "2023-06-15", time: "4:00 PM", reason: "Maintenance" },
@@ -38,7 +51,6 @@ export default function AdminDashboard() {
   };
 
   const fetchBookings = async () => {
-    // Mock data - replace with API call
     setBookings([
       {
         id: 1,
@@ -76,7 +88,6 @@ export default function AdminDashboard() {
   };
 
   const fetchEnquiries = async () => {
-    // Mock data - replace with API call
     setEnquiries([
       {
         id: 1,
@@ -112,7 +123,6 @@ export default function AdminDashboard() {
   };
 
   const fetchAgreements = async () => {
-    // Mock data - replace with API call
     setAgreements([
       {
         id: 1,
@@ -132,28 +142,70 @@ export default function AdminDashboard() {
 
   const handleBlockDate = async (e) => {
     e.preventDefault();
-    // API call to block date would go here
     console.log("Blocking date:", newBlock);
-    // Reset form
     setNewBlock({ date: "", time: "", reason: "" });
-    // Refresh data
     await fetchBlockedDates();
   };
 
-  const deleteBlockedDate = async (id) => {
-    // API call to delete would go here
-    console.log("Deleting blocked date with id:", id);
-    await fetchBlockedDates();
+  const confirmDeleteBlockedDate = (id) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      id: id,
+    });
   };
 
-  const handleEnquiryAction = async (id, action) => {
+  const deleteBlockedDate = async () => {
+    console.log("Deleting blocked date with id:", deleteConfirmation.id);
+    await fetchBlockedDates();
+    setDeleteConfirmation({
+      isOpen: false,
+      id: null,
+    });
+  };
+
+  const handleEnquiryAction = (id, action) => {
+    const enquiry = enquiries.find(e => e.id === id);
+    
     if (action === "approve") {
-      // Logic to show agreement form would go here
-      console.log("Approving enquiry:", id);
+      setApprovalConfirmation({
+        isOpen: true,
+        id: id,
+      });
     } else {
-      // Logic to show meeting scheduling form would go here
-      console.log("Denying enquiry:", id);
+      setDenyDialog({
+        isOpen: true,
+        enquiry: enquiry,
+        date: "",
+        time: "",
+        message: "",
+      });
     }
+  };
+
+  const approveEnquiry = async () => {
+    console.log("Approving enquiry:", approvalConfirmation.id);
+    await fetchEnquiries();
+    setApprovalConfirmation({
+      isOpen: false,
+      id: null,
+    });
+  };
+
+  const sendDenial = async (e) => {
+    e.preventDefault();
+    console.log("Sending denial for enquiry:", denyDialog.enquiry.id, {
+      date: denyDialog.date,
+      time: denyDialog.time,
+      message: denyDialog.message,
+    });
+    await fetchEnquiries();
+    setDenyDialog({
+      isOpen: false,
+      enquiry: null,
+      date: "",
+      time: "",
+      message: "",
+    });
   };
 
   return (
@@ -164,7 +216,7 @@ export default function AdminDashboard() {
 
       <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
         <Tab.List className="flex space-x-1 rounded-lg bg-gray-900 p-1 mb-6">
-          {["Block Dates", "Bookings", "Enquiries", "Agreements"].map((tab) => (
+          {["Block Schedule", "Bookings", "Enquiries", "Agreements"].map((tab) => (
             <Tab
               key={tab}
               className={({ selected }) =>
@@ -187,7 +239,7 @@ export default function AdminDashboard() {
               <div className="bg-gray-900 rounded-lg p-6">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
                   <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Block New Date
+                  Block Schedule
                 </h2>
                 <form onSubmit={handleBlockDate} className="space-y-4">
                   <div>
@@ -247,7 +299,7 @@ export default function AdminDashboard() {
                     type="submit"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
                   >
-                    Block Date
+                    Block Schedule
                   </button>
                 </form>
               </div>
@@ -255,7 +307,7 @@ export default function AdminDashboard() {
               <div className="bg-gray-900 rounded-lg p-6">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
                   <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Blocked Dates
+                  Blocked Schedule
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-700">
@@ -289,7 +341,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <button
-                              onClick={() => deleteBlockedDate(block.id)}
+                              onClick={() => confirmDeleteBlockedDate(block.id)}
                               className="text-red-400 hover:text-red-300"
                             >
                               <XCircleIcon className="h-5 w-5" />
@@ -553,6 +605,130 @@ export default function AdminDashboard() {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">Are you sure you want to delete this blocked schedule?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setDeleteConfirmation({ isOpen: false, id: null })}
+                className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+              >
+                No
+              </button>
+              <button
+                onClick={deleteBlockedDate}
+                className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approval Confirmation Dialog */}
+      {approvalConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Approval</h3>
+            <p className="mb-6">Are you sure you want to approve this enquiry?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setApprovalConfirmation({ isOpen: false, id: null })}
+                className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+              >
+                No
+              </button>
+              <button
+                onClick={approveEnquiry}
+                className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700"
+              >
+                Yes, Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Denial Meeting Schedule Dialog */}
+      {denyDialog.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Schedule Meeting for Denial</h3>
+            
+            <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+              <h4 className="font-medium mb-2">Client Details:</h4>
+              <p>Name: {denyDialog.enquiry.clientName}</p>
+              <p>Email: {denyDialog.enquiry.email}</p>
+              <p>Phone: {denyDialog.enquiry.phone}</p>
+            </div>
+
+            <form onSubmit={sendDenial} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Date *</label>
+                <input
+                  type="date"
+                  value={denyDialog.date}
+                  onChange={(e) => setDenyDialog({ ...denyDialog, date: e.target.value })}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Time *</label>
+                <select
+                  value={denyDialog.time}
+                  onChange={(e) => setDenyDialog({ ...denyDialog, time: e.target.value })}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                >
+                  <option value="">Select time</option>
+                  <option value="08:00 AM">08:00 AM</option>
+                  <option value="10:00 AM">10:00 AM</option>
+                  <option value="12:00 PM">12:00 PM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="04:00 PM">04:00 PM</option>
+                  <option value="06:00 PM">06:00 PM</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Message *</label>
+                <textarea
+                  value={denyDialog.message}
+                  onChange={(e) => setDenyDialog({ ...denyDialog, message: e.target.value })}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  required
+                  placeholder="Enter your message to the client"
+                  rows="3"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setDenyDialog({ isOpen: false, enquiry: null, date: "", time: "", message: "" })}
+                  className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+                >
+                  Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
