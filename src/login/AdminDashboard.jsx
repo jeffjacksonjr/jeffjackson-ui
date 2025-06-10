@@ -1,6 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Tab } from '@headlessui/react';
-import { CalendarIcon, ClockIcon, XCircleIcon, CheckCircleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react";
+import { Tab } from "@headlessui/react";
+import {
+  CalendarIcon,
+  ClockIcon,
+  XCircleIcon,
+  CheckCircleIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -9,9 +15,9 @@ export default function AdminDashboard() {
   const [enquiries, setEnquiries] = useState([]);
   const [agreements, setAgreements] = useState([]);
   const [newBlock, setNewBlock] = useState({
-    date: '',
-    time: '',
-    reason: ''
+    date: "",
+    time: "",
+    reason: "",
   });
 
   // Fetch data on component mount
@@ -26,58 +32,127 @@ export default function AdminDashboard() {
   const fetchBlockedDates = async () => {
     // Mock data - replace with API call
     setBlockedDates([
-      { id: 1, date: '2023-06-10', time: '2:00 PM', reason: 'Personal' },
-      { id: 2, date: '2023-06-15', time: '4:00 PM', reason: 'Maintenance' }
+      { id: 1, date: "2023-06-10", time: "2:00 PM", reason: "Personal" },
+      { id: 2, date: "2023-06-15", time: "4:00 PM", reason: "Maintenance" },
     ]);
   };
 
   const fetchBookings = async () => {
     // Mock data - replace with API call
     setBookings([
-      { id: 1, client: 'John Doe', date: '2023-06-12', time: '6:00 PM', status: 'Paid', amount: '$500' },
-      { id: 2, client: 'Jane Smith', date: '2023-06-18', time: '8:00 PM', status: 'Pending', amount: '$500' }
+      {
+        id: 1,
+        clientName: "John Doe",
+        email: "john.doe@example.com",
+        phone: "+1 555-123-4567",
+        eventType: "Wedding Reception",
+        eventDate: "2023-06-12",
+        eventTime: "6:00 PM",
+        street: "123 Main Street",
+        apt: "Apt 4B",
+        city: "New York",
+        state: "NY",
+        message: "Need DJ for our wedding reception from 6PM to midnight",
+        status: "Paid",
+        amount: "$500",
+      },
+      {
+        id: 2,
+        clientName: "Jane Smith",
+        email: "jane.smith@example.com",
+        phone: "+1 555-987-6543",
+        eventType: "Corporate Event",
+        eventDate: "2023-06-18",
+        eventTime: "8:00 PM",
+        street: "456 Business Ave",
+        apt: "",
+        city: "Brooklyn",
+        state: "NY",
+        message: "Annual company party with 100+ guests",
+        status: "Pending",
+        amount: "$750",
+      },
     ]);
   };
 
   const fetchEnquiries = async () => {
     // Mock data - replace with API call
     setEnquiries([
-      { id: 1, client: 'Alex Johnson', date: '2023-07-05', time: '7:00 PM', status: 'Pending' },
-      { id: 2, client: 'Sarah Williams', date: '2023-07-12', time: '5:00 PM', status: 'Approved' }
+      {
+        id: 1,
+        clientName: "Alex Johnson",
+        email: "alex.j@example.com",
+        phone: "+1 555-456-7890",
+        eventType: "Birthday Party",
+        eventDate: "2023-07-05",
+        eventTime: "7:00 PM",
+        street: "789 Celebration Lane",
+        apt: "",
+        city: "Queens",
+        state: "NY",
+        message: "Looking for DJ for my 30th birthday party",
+        status: "Pending",
+      },
+      {
+        id: 2,
+        clientName: "Sarah Williams",
+        email: "sarah.w@example.com",
+        phone: "+1 555-789-0123",
+        eventType: "Anniversary",
+        eventDate: "2023-07-12",
+        eventTime: "5:00 PM",
+        street: "321 Memory Blvd",
+        apt: "Penthouse",
+        city: "Manhattan",
+        state: "NY",
+        message: "25th anniversary celebration with dinner and dancing",
+        status: "Approved",
+      },
     ]);
   };
 
   const fetchAgreements = async () => {
     // Mock data - replace with API call
     setAgreements([
-      { id: 1, client: 'Mike Brown', dateSent: '2023-06-01', status: 'Signed', fileUrl: '#' },
-      { id: 2, client: 'Emily Davis', dateSent: '2023-06-05', status: 'Pending' }
+      {
+        id: 1,
+        client: "Mike Brown",
+        dateSent: "2023-06-01",
+        status: "Signed",
+        fileUrl: "#",
+      },
+      {
+        id: 2,
+        client: "Emily Davis",
+        dateSent: "2023-06-05",
+        status: "Pending",
+      },
     ]);
   };
 
   const handleBlockDate = async (e) => {
     e.preventDefault();
     // API call to block date would go here
-    console.log('Blocking date:', newBlock);
+    console.log("Blocking date:", newBlock);
     // Reset form
-    setNewBlock({ date: '', time: '', reason: '' });
+    setNewBlock({ date: "", time: "", reason: "" });
     // Refresh data
     await fetchBlockedDates();
   };
 
   const deleteBlockedDate = async (id) => {
     // API call to delete would go here
-    console.log('Deleting blocked date with id:', id);
+    console.log("Deleting blocked date with id:", id);
     await fetchBlockedDates();
   };
 
   const handleEnquiryAction = async (id, action) => {
-    if (action === 'approve') {
+    if (action === "approve") {
       // Logic to show agreement form would go here
-      console.log('Approving enquiry:', id);
+      console.log("Approving enquiry:", id);
     } else {
       // Logic to show meeting scheduling form would go here
-      console.log('Denying enquiry:', id);
+      console.log("Denying enquiry:", id);
     }
   };
 
@@ -89,12 +164,14 @@ export default function AdminDashboard() {
 
       <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
         <Tab.List className="flex space-x-1 rounded-lg bg-gray-900 p-1 mb-6">
-          {['Block Dates', 'Bookings', 'Enquiries', 'Agreements'].map((tab) => (
+          {["Block Dates", "Bookings", "Enquiries", "Agreements"].map((tab) => (
             <Tab
               key={tab}
               className={({ selected }) =>
                 `w-full py-2.5 text-sm font-medium rounded-md transition-all ${
-                  selected ? 'bg-purple-600 text-white' : 'text-gray-300 hover:bg-gray-800'
+                  selected
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-300 hover:bg-gray-800"
                 }`
               }
             >
@@ -114,38 +191,54 @@ export default function AdminDashboard() {
                 </h2>
                 <form onSubmit={handleBlockDate} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Date *</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Date *
+                    </label>
                     <input
                       type="date"
                       value={newBlock.date}
-                      onChange={(e) => setNewBlock({...newBlock, date: e.target.value})}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, date: e.target.value })
+                      }
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Time *</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Time *
+                    </label>
                     <select
                       value={newBlock.time}
-                      onChange={(e) => setNewBlock({...newBlock, time: e.target.value})}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, time: e.target.value })
+                      }
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
                       required
                     >
                       <option value="">Select time</option>
+                      <option value="12:00 PM">08:00 AM</option>
+                      <option value="12:00 PM">10:00 AM</option>
                       <option value="12:00 PM">12:00 PM</option>
                       <option value="2:00 PM">2:00 PM</option>
                       <option value="4:00 PM">4:00 PM</option>
+                      <option value="12:00 PM">5:00 PM</option>
                       <option value="6:00 PM">6:00 PM</option>
+                      <option value="6:00 PM">7:00 PM</option>
                       <option value="8:00 PM">8:00 PM</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Reason</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Reason
+                    </label>
                     <input
                       type="text"
                       value={newBlock.reason}
-                      onChange={(e) => setNewBlock({...newBlock, reason: e.target.value})}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, reason: e.target.value })
+                      }
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
                       placeholder="Optional reason for blocking"
                     />
@@ -168,18 +261,32 @@ export default function AdminDashboard() {
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead>
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Reason</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Time
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Reason
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
                       {blockedDates.map((block) => (
                         <tr key={block.id}>
-                          <td className="px-4 py-3 whitespace-nowrap">{block.date}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">{block.time}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">{block.reason || '-'}</td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {block.date}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {block.time}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {block.reason || "-"}
+                          </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <button
                               onClick={() => deleteBlockedDate(block.id)}
@@ -205,27 +312,70 @@ export default function AdminDashboard() {
                 <table className="min-w-full divide-y divide-gray-700">
                   <thead>
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payment Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Full Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Phone
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Event Type
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Event Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Address
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Message
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Payment Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {bookings.map((booking) => (
                       <tr key={booking.id}>
-                        <td className="px-4 py-3 whitespace-nowrap">{booking.client}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{booking.date}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{booking.time}</td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {booking.clientName}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {booking.email}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {booking.phone}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {booking.eventType}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {new Date(booking.eventDate).toLocaleDateString()} at{" "}
+                          {booking.eventTime}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {booking.street}
+                          {booking.apt ? `, ${booking.apt}` : ""},{" "}
+                          {booking.city}, {booking.state}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
+                          {booking.message || "-"}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            booking.status === 'Paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              booking.status === "Paid"
+                                ? "bg-green-900 text-green-300"
+                                : "bg-yellow-900 text-yellow-300"
+                            }`}
+                          >
                             {booking.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{booking.amount}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -242,36 +392,87 @@ export default function AdminDashboard() {
                 <table className="min-w-full divide-y divide-gray-700">
                   <thead>
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Full Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Phone
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Event Type
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Event Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Address
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Message
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {enquiries.map((enquiry) => (
                       <tr key={enquiry.id}>
-                        <td className="px-4 py-3 whitespace-nowrap">{enquiry.client}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{enquiry.date}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{enquiry.time}</td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {enquiry.clientName}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {enquiry.email}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {enquiry.phone}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {enquiry.eventType}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {new Date(enquiry.eventDate).toLocaleDateString()} at{" "}
+                          {enquiry.eventTime}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal">
+                          {enquiry.street}
+                          {enquiry.apt ? `, ${enquiry.apt}` : ""},{" "}
+                          {enquiry.city}, {enquiry.state}
+                        </td>
+                        <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
+                          {enquiry.message || "-"}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            enquiry.status === 'Approved' ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              enquiry.status === "Approved"
+                                ? "bg-green-900 text-green-300"
+                                : "bg-gray-700 text-gray-300"
+                            }`}
+                          >
                             {enquiry.status}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap space-x-2">
                           <button
-                            onClick={() => handleEnquiryAction(enquiry.id, 'approve')}
+                            onClick={() =>
+                              handleEnquiryAction(enquiry.id, "approve")
+                            }
                             className="text-green-400 hover:text-green-300"
                             title="Approve"
                           >
                             <CheckCircleIcon className="h-5 w-5" />
                           </button>
                           <button
-                            onClick={() => handleEnquiryAction(enquiry.id, 'deny')}
+                            onClick={() =>
+                              handleEnquiryAction(enquiry.id, "deny")
+                            }
                             className="text-red-400 hover:text-red-300"
                             title="Deny"
                           >
@@ -294,21 +495,37 @@ export default function AdminDashboard() {
                 <table className="min-w-full divide-y divide-gray-700">
                   <thead>
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date Sent</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Date Sent
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {agreements.map((agreement) => (
                       <tr key={agreement.id}>
-                        <td className="px-4 py-3 whitespace-nowrap">{agreement.client}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{agreement.dateSent}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            agreement.status === 'Signed' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                          }`}>
+                          {agreement.client}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {agreement.dateSent}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              agreement.status === "Signed"
+                                ? "bg-green-900 text-green-300"
+                                : "bg-yellow-900 text-yellow-300"
+                            }`}
+                          >
                             {agreement.status}
                           </span>
                         </td>
