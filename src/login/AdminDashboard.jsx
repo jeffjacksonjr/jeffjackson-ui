@@ -7,9 +7,28 @@ import {
   CheckCircleIcon,
   DocumentTextIcon,
   PaperAirplaneIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
+const loadJsPDF = () => {
+  return new Promise((resolve, reject) => {
+    if (window.jsPDF) {
+      resolve(window.jsPDF);
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = () => {
+      resolve(window.jspdf.jsPDF);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
+
 function AgreementModal({ booking, onClose, onSend }) {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [agreementAmount, setAgreementAmount] = useState(1500);
   const [ownerName, setOwnerName] = useState("Jeff Jackson Jr");
@@ -19,28 +38,274 @@ function AgreementModal({ booking, onClose, onSend }) {
   const depositAmount = parseInt(booking.amount.replace(/\D/g, '')) || 0;
   const remainingBalance = agreementAmount - depositAmount;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const payload = {
-      clientDetails: {
-        name: booking.clientName,
-        phone: booking.phone,
-        eventDate: booking.eventDate,
-        eventLocation: `${booking.street}${booking.apt ? `, ${booking.apt}` : ""}, ${booking.city}, ${booking.state}`,
-        eventStartTime: booking.eventTime,
-        eventEndTime: eventEndTime,
-        eventType: booking.eventType,
-      },
-      specialInstructions,
-      agreementAmount,
-      depositAmount,
-      remainingBalance,
-      clientName: booking.clientName,
-      ownerName,
-      date: new Date().toLocaleDateString(),
+  
+const handleGeneratePDF = async (e) => {
+  e.preventDefault();
+  setIsGenerating(true);
+  
+  try {
+    const jsPDF = await loadJsPDF();
+    const doc = new jsPDF();
+    
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const maxContentHeight = pageHeight - 30; // Leave space for footer
+    let yPos = 20;
+    
+    // Helper function to check if we need a new page
+    const checkPageBreak = (requiredHeight) => {
+      if (yPos + requiredHeight > maxContentHeight) {
+        doc.addPage();
+        yPos = 20;
+        return true;
+      }
+      return false;
     };
-    onSend(payload);
-  };
+    
+    // Helper function to add section background
+    const addSectionBackground = (startY, height, color) => {
+      doc.setFillColor(...color);
+      doc.rect(margin - 5, startY - 5, pageWidth - 2 * margin + 10, height, 'F');
+    };
+    
+    // Add background color effect (light gray)
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    
+    // Header with purple background
+    doc.setFillColor(147, 51, 234); // Purple-600
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255); // White text
+    doc.text('Jeff Jackson DJ SERVICE AGREEMENT', pageWidth / 2, 25, { align: 'center' });
+    
+    yPos = 55;
+    doc.setTextColor(0, 0, 0); // Reset to black
+    
+    // Client Details Section
+    checkPageBreak(90); // Check if we need space for client details
+    const clientSectionStart = yPos;
+    
+    addSectionBackground(yPos, 90, [31, 41, 55]); // Gray-800
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('CLIENT DETAILS', margin, yPos + 5);
+    
+    yPos += 20;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    // Two column layout for client details
+    const leftCol = margin + 5;
+    const rightCol = pageWidth / 2 + 10;
+    
+    doc.text(`Client Name: ${booking.clientName}`, leftCol, yPos);
+    doc.text(`Phone: ${booking.phone}`, rightCol, yPos);
+    yPos += 12;
+    
+    doc.text(`Event Date: ${new Date(booking.eventDate).toLocaleDateString()}`, leftCol, yPos);
+    doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
+    yPos += 12;
+    
+    doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
+    doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
+    yPos += 12;
+    
+    // Address spans full width
+    const addressText = `Event Location: ${booking.street}${booking.apt ? `, ${booking.apt}` : ""}, ${booking.city}, ${booking.state}`;
+    const addressLines = doc.splitTextToSize(addressText, pageWidth - 2 * margin - 10);
+    doc.text(addressLines, leftCol, yPos);
+    yPos += addressLines.length * 8 + 20;
+    
+    // Special Instructions Section
+    if (specialInstructions) {
+      const instructionLines = doc.splitTextToSize(specialInstructions, pageWidth - 2 * margin - 10);
+      const sectionHeight = 30 + (instructionLines.length * 8);
+      
+      checkPageBreak(sectionHeight);
+      
+      addSectionBackground(yPos, sectionHeight, [17, 24, 39]); // Gray-900
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('SPECIAL INSTRUCTIONS', margin, yPos + 5);
+      yPos += 20;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(instructionLines, margin + 5, yPos);
+      yPos += instructionLines.length * 8 + 20;
+    }
+    
+    // Service Agreement Section
+    checkPageBreak(60);
+    
+    addSectionBackground(yPos, 50, [55, 65, 81]); // Gray-700
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(255, 255, 255);
+    doc.text('Jeff Jackson Jr services agrees to provide music and entertainment at the above time', margin + 5, yPos + 10);
+    doc.text('and location as needed for the event.', margin + 5, yPos + 22);
+    
+    doc.setFont('helvetica', 'bold');
+    const overtimeText1 = '(Overtime will be charged at a rate of $200 per additional hour. Overtime will';
+    const overtimeText2 = 'only be provided if the DJ is available.)';
+    
+    // Split the text to ensure it fits within the page width
+    const overtimeLines1 = doc.splitTextToSize(overtimeText1, pageWidth - 2 * margin - 10);
+    const overtimeLines2 = doc.splitTextToSize(overtimeText2, pageWidth - 2 * margin - 10);
+    
+    let currentY = yPos + 34;
+    overtimeLines1.forEach(line => {
+      doc.text(line, margin + 5, currentY);
+      currentY += 10;
+    });
+    
+    overtimeLines2.forEach(line => {
+      doc.text(line, margin + 5, currentY);
+      currentY += 10;
+    });
+    
+    yPos += 65;
+    
+    // Financial Details Section
+    checkPageBreak(50);
+    
+    addSectionBackground(yPos, 45, [31, 41, 55]); // Gray-800
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('FINANCIAL DETAILS', margin, yPos + 5);
+    
+    yPos += 20;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    // Three column layout for financial details
+    const col1 = margin + 5;
+    const col2 = margin + 70;
+    const col3 = margin + 135;
+    
+    doc.text(`Agreement Total: $${agreementAmount}`, col1, yPos);
+    doc.text(`Deposit: ${booking.amount}`, col2, yPos);
+    doc.text(`Balance: $${remainingBalance}`, col3, yPos);
+    
+    yPos += 35;
+    
+    // Terms and Conditions Section
+    const terms = [
+      '• Remaining balance must be paid in full on or before the start of event.',
+      '• Date and Time of event are reserved as agreed upon within the details of this contract.',
+      '• Any changes must be made at least 24 hours prior to event.',
+      '• In the unlikely event of an emergency, Jeff Jackson Jr will attempt to arrange a',
+      '  replacement DJ/Host to fulfill this contract agreement.',
+      '• In the event of cancellation, the event can be re-booked within 30 days without fees.',
+      '• If the venue requires insurance, the price will be reimbursed by the Client.'
+    ];
+    
+    const termsHeight = 30 + (terms.length * 10);
+    checkPageBreak(termsHeight);
+    
+    addSectionBackground(yPos, termsHeight, [17, 24, 39]); // Gray-900
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('TERMS AND CONDITIONS', margin, yPos + 5);
+    
+    yPos += 20;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    
+    terms.forEach(term => {
+      // Split long terms if they exceed page width
+      const termLines = doc.splitTextToSize(term, pageWidth - 2 * margin - 10);
+      termLines.forEach(line => {
+        if (yPos > maxContentHeight - 10) {
+          doc.addPage();
+          yPos = 20;
+          // Re-add background for continuation
+          doc.setFillColor(248, 250, 252);
+          doc.rect(0, 0, pageWidth, pageHeight, 'F');
+          doc.setTextColor(255, 255, 255);
+        }
+        doc.text(line, margin + 5, yPos);
+        yPos += 10;
+      });
+    });
+    
+    yPos += 15;
+    
+    // Signatures Section
+    checkPageBreak(80);
+    
+    addSectionBackground(yPos, 75, [55, 65, 81]); // Gray-700
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('ACCEPTANCE OF AGREEMENT', margin, yPos + 5);
+    
+    yPos += 20;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('By signing below, the client acknowledges they have read, understood, and agree', margin + 5, yPos);
+    doc.text('to all the terms of this contract agreement.', margin + 5, yPos + 12);
+    
+    yPos += 30;
+    
+    // Signature fields
+    doc.text(`Client Name: ${booking.clientName}`, margin + 5, yPos);
+    doc.text(`Owner Name: ${ownerName}`, margin + 100, yPos);
+    yPos += 15;
+    
+    // Signature lines with better styling
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margin + 5, yPos, margin + 85, yPos);
+    doc.line(margin + 100, yPos, margin + 180, yPos);
+    
+    yPos += 10;
+    doc.setFontSize(8);
+    doc.text('Client Signature', margin + 5, yPos);
+    doc.text('Owner Signature', margin + 100, yPos);
+    yPos += 15;
+    
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, margin + 5, yPos);
+    
+    // Footer note - ensure it fits
+    yPos += 20;
+    if (yPos > maxContentHeight - 15) {
+      doc.addPage();
+      yPos = 20;
+      // Re-add background for new page
+      doc.setFillColor(248, 250, 252);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(0, 0, 0);
+    doc.text('*Note: Contract will be VOID if deposit is not received within 7 days of receipt.', margin + 5, yPos);
+    
+    // Generate and download PDF
+    doc.save(`DJ_Agreement_${booking.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    onClose();
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('Error generating PDF. Please try again.');
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 overflow-y-auto p-4">
@@ -54,37 +319,59 @@ function AgreementModal({ booking, onClose, onSend }) {
             &times;
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={handleGeneratePDF}>
           <div className="mb-6 space-y-3">
-            <h4 className="font-bold text-lg border-b border-gray-700 pb-2">Client Details</h4>
+            <h4 className="font-bold text-lg border-b border-gray-700 pb-2">
+              Client Details
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Client Name</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.clientName}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Client Name
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.clientName}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Client Phone</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.phone}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Client Phone
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.phone}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Event Date</label>
+                <label className="block text-sm font-medium mb-1">
+                  Event Date
+                </label>
                 <div className="bg-gray-700 p-2 rounded border border-gray-600">
                   {new Date(booking.eventDate).toLocaleDateString()}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Event Location</label>
+                <label className="block text-sm font-medium mb-1">
+                  Event Location
+                </label>
                 <div className="bg-gray-700 p-2 rounded border border-gray-600">
-                  {booking.street}{booking.apt ? `, ${booking.apt}` : ""}, {booking.city}, {booking.state}
+                  {booking.street}
+                  {booking.apt ? `, ${booking.apt}` : ""}, {booking.city},{" "}
+                  {booking.state}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Event Start Time</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.eventTime}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Event Start Time
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.eventTime}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Event End Time</label>
+                <label className="block text-sm font-medium mb-1">
+                  Event End Time
+                </label>
                 <input
                   type="text"
                   value={eventEndTime}
@@ -93,14 +380,20 @@ function AgreementModal({ booking, onClose, onSend }) {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Type of Event</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.eventType}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Type of Event
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.eventType}
+                </div>
               </div>
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-1">Special Instructions/Requests</label>
+            <label className="block text-sm font-medium mb-1">
+              Special Instructions/Requests
+            </label>
             <textarea
               value={specialInstructions}
               onChange={(e) => setSpecialInstructions(e.target.value)}
@@ -112,51 +405,99 @@ function AgreementModal({ booking, onClose, onSend }) {
 
           <div className="mb-6 bg-gray-900 p-4 rounded-lg">
             <p className="mb-4">
-              Jeff Jackson Jr services agrees to provide music and entertainment at the above time and location as needed for the event. <b> (Overtime will be charged at a rate of $200 per additional hour. Overtime will only be provided if the DJ is available.) </b>
+              Jeff Jackson Jr services agrees to provide music and entertainment
+              at the above time and location as needed for the event.{" "}
+              <b>
+                {" "}
+                (Overtime will be charged at a rate of $200 per additional hour.
+                Overtime will only be provided if the DJ is available.){" "}
+              </b>
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Agreement Amount Total ($)</label>
+                <label className="block text-sm font-medium mb-1">
+                  Agreement Amount Total ($)
+                </label>
                 <input
                   type="number"
                   value={agreementAmount}
-                  onChange={(e) => setAgreementAmount(parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    setAgreementAmount(parseInt(e.target.value) || 0)
+                  }
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Deposit Received</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.amount}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Deposit Received
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.amount}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Remaining Balance</label>
-                <div className="bg-gray-700 p-2 rounded border border-gray-600">${remainingBalance}</div>
+                <label className="block text-sm font-medium mb-1">
+                  Remaining Balance
+                </label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  ${remainingBalance}
+                </div>
               </div>
             </div>
 
             <div className="mb-6">
-              <h4 className="font-bold mb-2">Terms and Conditions of Agreement</h4>
+              <h4 className="font-bold mb-2">
+                Terms and Conditions of Agreement
+              </h4>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Remaining balance must be paid in full on or before the start of event.</li>
-                <li>Date and Time of event are reserved as agreed upon within the details of this contract agreement. Any changes must be made at least 24 hours prior to event.</li>
-                <li>In the unlikely event of an emergency, (i.e., illness, accident, act of God), it shall be the duty of Jeff Jackson Jr to attempt to arrange a replacement DJ/Host to fulfill this contract agreement.</li>
-                <li>In the event of cancellation, the event can be re-booked within 30 days without additional fees.</li>
-                <li>If the venue requires insurance, the price of the insurance will be reimbursed from the "Client" to Jeff Jackson Jr.</li>
+                <li>
+                  Remaining balance must be paid in full on or before the start
+                  of event.
+                </li>
+                <li>
+                  Date and Time of event are reserved as agreed upon within the
+                  details of this contract agreement. Any changes must be made
+                  at least 24 hours prior to event.
+                </li>
+                <li>
+                  In the unlikely event of an emergency, (i.e., illness,
+                  accident, act of God), it shall be the duty of Jeff Jackson Jr
+                  to attempt to arrange a replacement DJ/Host to fulfill this
+                  contract agreement.
+                </li>
+                <li>
+                  In the event of cancellation, the event can be re-booked
+                  within 30 days without additional fees.
+                </li>
+                <li>
+                  If the venue requires insurance, the price of the insurance
+                  will be reimbursed from the "Client" to Jeff Jackson Jr.
+                </li>
               </ul>
             </div>
 
             <div className="mb-4">
               <h4 className="font-bold mb-2">Acceptance of Agreement</h4>
-              <p className="mb-4">By signing below, the client acknowledges they have read, understood, and agree to all the terms of this contract agreement.</p>
-              
+              <p className="mb-4">
+                By signing below, the client acknowledges they have read,
+                understood, and agree to all the terms of this contract
+                agreement.
+              </p>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Client's Printed Name</label>
-                  <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.clientName}</div>
+                  <label className="block text-sm font-medium mb-1">
+                    Client's Printed Name
+                  </label>
+                  <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                    {booking.clientName}
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Owner Name</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Owner Name
+                  </label>
                   <input
                     type="text"
                     value={ownerName}
@@ -165,18 +506,22 @@ function AgreementModal({ booking, onClose, onSend }) {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Client's Signature</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Client's Signature
+                  </label>
                   <div className="h-12 border-b border-gray-500"></div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Owner's Signature</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Owner's Signature
+                  </label>
                   <div className="h-12 border-b border-gray-500"></div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Date</label>
                 <div className="bg-gray-700 p-2 rounded border border-gray-600">
@@ -186,7 +531,9 @@ function AgreementModal({ booking, onClose, onSend }) {
             </div>
 
             <p className="text-sm italic">
-              *Note: Contract will be VOID if deposit is not received within 7 days of receipt of the contract. (Please sign contract and return one copy with the required security deposit.)
+              *Note: Contract will be VOID if deposit is not received within 7
+              days of receipt of the contract. (Please sign contract and return
+              one copy with the required security deposit.)
             </p>
           </div>
 
@@ -200,10 +547,11 @@ function AgreementModal({ booking, onClose, onSend }) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 flex items-center"
+              disabled={isGenerating}
+              className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 flex items-center disabled:opacity-50"
             >
-              <PaperAirplaneIcon className="h-5 w-5 mr-2" />
-              Send Agreement
+              <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+              {isGenerating ? "Generating PDF..." : "Generate PDF Agreement"}
             </button>
           </div>
         </form>
