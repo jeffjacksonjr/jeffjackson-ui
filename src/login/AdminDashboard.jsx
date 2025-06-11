@@ -81,14 +81,14 @@ const handleGeneratePDF = async (e) => {
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255); // White text
-    doc.text('Jeff Jackson DJ SERVICE AGREEMENT', pageWidth / 2, 25, { align: 'center' });
+    doc.text('Jeff Jackson DJ Service Agreement', pageWidth / 2, 25, { align: 'center' });
     
     yPos = 55;
     doc.setTextColor(0, 0, 0); // Reset to black
     
     // Client Details Section
     checkPageBreak(90); // Check if we need space for client details
-    const clientSectionStart = yPos;
+    // const clientSectionStart = yPos;
     
     addSectionBackground(yPos, 90, [31, 41, 55]); // Gray-800
     
