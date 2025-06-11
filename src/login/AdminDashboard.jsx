@@ -6,7 +6,211 @@ import {
   XCircleIcon,
   CheckCircleIcon,
   DocumentTextIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
+
+function AgreementModal({ booking, onClose, onSend }) {
+  const [specialInstructions, setSpecialInstructions] = useState("");
+  const [agreementAmount, setAgreementAmount] = useState(1500);
+  const [ownerName, setOwnerName] = useState("Jeff Jackson Jr");
+  const [eventEndTime, setEventEndTime] = useState("11:00 PM");
+
+  // Calculate remaining balance safely
+  const depositAmount = parseInt(booking.amount.replace(/\D/g, '')) || 0;
+  const remainingBalance = agreementAmount - depositAmount;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      clientDetails: {
+        name: booking.clientName,
+        phone: booking.phone,
+        eventDate: booking.eventDate,
+        eventLocation: `${booking.street}${booking.apt ? `, ${booking.apt}` : ""}, ${booking.city}, ${booking.state}`,
+        eventStartTime: booking.eventTime,
+        eventEndTime: eventEndTime,
+        eventType: booking.eventType,
+      },
+      specialInstructions,
+      agreementAmount,
+      depositAmount,
+      remainingBalance,
+      clientName: booking.clientName,
+      ownerName,
+      date: new Date().toLocaleDateString(),
+    };
+    onSend(payload);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 overflow-y-auto p-4">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-xl font-bold flex items-center">
+            <DocumentTextIcon className="h-5 w-5 mr-2 text-purple-400" />
+            Send Agreement
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            &times;
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6 space-y-3">
+            <h4 className="font-bold text-lg border-b border-gray-700 pb-2">Client Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Client Name</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.clientName}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Client Phone</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.phone}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Event Date</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {new Date(booking.eventDate).toLocaleDateString()}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Event Location</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {booking.street}{booking.apt ? `, ${booking.apt}` : ""}, {booking.city}, {booking.state}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Event Start Time</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.eventTime}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Event End Time</label>
+                <input
+                  type="text"
+                  value={eventEndTime}
+                  onChange={(e) => setEventEndTime(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Type of Event</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.eventType}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-1">Special Instructions/Requests</label>
+            <textarea
+              value={specialInstructions}
+              onChange={(e) => setSpecialInstructions(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              rows="3"
+              placeholder="Enter any special instructions or requests"
+            />
+          </div>
+
+          <div className="mb-6 bg-gray-900 p-4 rounded-lg">
+            <p className="mb-4">
+              Jeff Jackson Jr services agrees to provide music and entertainment at the above time and location as needed for the event. <b> (Overtime will be charged at a rate of $200 per additional hour. Overtime will only be provided if the DJ is available.) </b>
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">Agreement Amount Total ($)</label>
+                <input
+                  type="number"
+                  value={agreementAmount}
+                  onChange={(e) => setAgreementAmount(parseInt(e.target.value) || 0)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Deposit Received</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.amount}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Remaining Balance</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">${remainingBalance}</div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-bold mb-2">Terms and Conditions of Agreement</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Remaining balance must be paid in full on or before the start of event.</li>
+                <li>Date and Time of event are reserved as agreed upon within the details of this contract agreement. Any changes must be made at least 24 hours prior to event.</li>
+                <li>In the unlikely event of an emergency, (i.e., illness, accident, act of God), it shall be the duty of Jeff Jackson Jr to attempt to arrange a replacement DJ/Host to fulfill this contract agreement.</li>
+                <li>In the event of cancellation, the event can be re-booked within 30 days without additional fees.</li>
+                <li>If the venue requires insurance, the price of the insurance will be reimbursed from the "Client" to Jeff Jackson Jr.</li>
+              </ul>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="font-bold mb-2">Acceptance of Agreement</h4>
+              <p className="mb-4">By signing below, the client acknowledges they have read, understood, and agree to all the terms of this contract agreement.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Client's Printed Name</label>
+                  <div className="bg-gray-700 p-2 rounded border border-gray-600">{booking.clientName}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Owner Name</label>
+                  <input
+                    type="text"
+                    value={ownerName}
+                    onChange={(e) => setOwnerName(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Client's Signature</label>
+                  <div className="h-12 border-b border-gray-500"></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Owner's Signature</label>
+                  <div className="h-12 border-b border-gray-500"></div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Date</label>
+                <div className="bg-gray-700 p-2 rounded border border-gray-600">
+                  {new Date().toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm italic">
+              *Note: Contract will be VOID if deposit is not received within 7 days of receipt of the contract. (Please sign contract and return one copy with the required security deposit.)
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 flex items-center"
+            >
+              <PaperAirplaneIcon className="h-5 w-5 mr-2" />
+              Send Agreement
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -34,8 +238,11 @@ export default function AdminDashboard() {
     time: "",
     message: "",
   });
+  const [agreementModal, setAgreementModal] = useState({
+    isOpen: false,
+    booking: null,
+  });
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchBlockedDates();
     fetchBookings();
@@ -208,6 +415,15 @@ export default function AdminDashboard() {
     });
   };
 
+  const sendAgreement = async (payload) => {
+    console.log("Sending agreement with payload:", payload);
+    // Here you would typically call an API to generate and send the PDF
+    // For now, we'll just log it and close the modal
+    setAgreementModal({ isOpen: false, booking: null });
+    // After sending, you might want to refresh the bookings list
+    await fetchBookings();
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-8">
@@ -270,14 +486,12 @@ export default function AdminDashboard() {
                       required
                     >
                       <option value="">Select time</option>
-                      <option value="12:00 PM">08:00 AM</option>
-                      <option value="12:00 PM">10:00 AM</option>
+                      <option value="08:00 AM">08:00 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
                       <option value="12:00 PM">12:00 PM</option>
                       <option value="2:00 PM">2:00 PM</option>
                       <option value="4:00 PM">4:00 PM</option>
-                      <option value="12:00 PM">5:00 PM</option>
                       <option value="6:00 PM">6:00 PM</option>
-                      <option value="6:00 PM">7:00 PM</option>
                       <option value="8:00 PM">8:00 PM</option>
                     </select>
                   </div>
@@ -365,6 +579,9 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Booking ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Full Name
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -388,11 +605,17 @@ export default function AdminDashboard() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Payment Status
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {bookings.map((booking) => (
                       <tr key={booking.id}>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {booking.id}
+                        </td>
                         <td className="px-4 py-3 whitespace-normal">
                           {booking.clientName}
                         </td>
@@ -425,8 +648,17 @@ export default function AdminDashboard() {
                                 : "bg-yellow-900 text-yellow-300"
                             }`}
                           >
-                            {booking.status}
+                            {booking.status === "Paid" ? `${booking.amount} paid` : booking.status}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <button
+                            onClick={() => setAgreementModal({ isOpen: true, booking })}
+                            className="text-purple-400 hover:text-purple-300"
+                            title="Send Agreement"
+                          >
+                            <PaperAirplaneIcon className="h-5 w-5" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -728,6 +960,15 @@ export default function AdminDashboard() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Agreement Modal */}
+      {agreementModal.isOpen && (
+        <AgreementModal
+          booking={agreementModal.booking}
+          onClose={() => setAgreementModal({ isOpen: false, booking: null })}
+          onSend={sendAgreement}
+        />
       )}
     </div>
   );
