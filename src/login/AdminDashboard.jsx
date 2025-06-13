@@ -141,7 +141,7 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
 function AgreementModal({ booking, onClose, onSend }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState("");
-  const [agreementAmount, setAgreementAmount] = useState(0);
+  const [agreementAmount, setAgreementAmount] = useState();
   const [ownerName, setOwnerName] = useState("Jeff Jackson Jr");
   const [eventEndTime, setEventEndTime] = useState("");
   const [pdfData, setPdfData] = useState(null);

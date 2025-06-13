@@ -10,6 +10,7 @@ export default function Navbar() {
     // { name: 'Music', href: '#music' },
     { name: 'Events', href: '#events' },
     { name: 'Gallery', href: '#gallery' },
+    { name: 'Payment', href: '/payment' },
     { name: 'Contact', href: '#contact' },
     { name: 'Login', href: '/login' },
   ];

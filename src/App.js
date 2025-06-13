@@ -5,6 +5,7 @@ import Home from './home/Home';
 import BookingWizard from './booking/BookingWizard'
 import LoginPage from './login/LoginPage'
 import AdminDashboard from './login/AdminDashboard';
+import PaymentLookup from './payment/PaymentLookup';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/book-now" element={<BookingWizard/>} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/dashboard" element={<AdminDashboard/>} />
+      <Route path="/payment" element={<PaymentLookup/>} />
     </Routes>
     <Footer/>
     </>
