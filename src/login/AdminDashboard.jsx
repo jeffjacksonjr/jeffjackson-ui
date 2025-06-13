@@ -141,14 +141,16 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
 function AgreementModal({ booking, onClose, onSend }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState("");
-  const [agreementAmount, setAgreementAmount] = useState();
+  const [agreementAmount, setAgreementAmount] = useState(
+    parseInt(booking.totalAmount?.replace(/\D/g, '')) || 0
+  );
   const [ownerName, setOwnerName] = useState("Jeff Jackson Jr");
   const [eventEndTime, setEventEndTime] = useState("");
   const [pdfData, setPdfData] = useState(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   // Calculate remaining balance safely
-  const depositAmount = parseInt(booking.amount.replace(/\D/g, '')) || 0;
+  const depositAmount = parseInt(booking.depositReceived?.replace(/\D/g, '')) || 0;
   const remainingBalance = agreementAmount ? agreementAmount - depositAmount : 0;
 
   const handleAmountChange = (e) => {
@@ -307,9 +309,9 @@ function AgreementModal({ booking, onClose, onSend }) {
       const col2 = margin + 70;
       const col3 = margin + 135;
       
-      doc.text(`Agreement Total: $${agreementAmount}`, col1, yPos);
-      doc.text(`Deposit: ${booking.amount}`, col2, yPos);
-      doc.text(`Balance: $${remainingBalance}`, col3, yPos);
+        doc.text(`Agreement Total: $${agreementAmount}`, col1, yPos);
+        doc.text(`Deposit: ${booking.depositReceived}`, col2, yPos);
+        doc.text(`Balance: $${remainingBalance}`, col3, yPos);
       
       yPos += 35;
       
@@ -567,6 +569,41 @@ function AgreementModal({ booking, onClose, onSend }) {
 }
 
 export default function AdminDashboard() {
+  const [editAmountModal, setEditAmountModal] = useState({
+  isOpen: false,
+  bookingId: null,
+  fieldToEdit: null, // 'deposit' or 'total'
+  depositReceived: "",
+  totalAmount: "",
+});
+
+// Add this function to handle amount updates
+const handleUpdateAmount = async (e) => {
+  e.preventDefault();
+  
+  setEnquiries(enquiries.map(enquiry => {
+    if (enquiry.id === editAmountModal.bookingId) {
+      const newDeposit = editAmountModal.fieldToEdit === 'deposit' 
+        ? `$${editAmountModal.depositReceived}`
+        : enquiry.depositReceived;
+      
+      const newTotal = editAmountModal.fieldToEdit === 'total'
+        ? `$${editAmountModal.totalAmount}`
+        : enquiry.totalAmount;
+      
+      return {
+        ...enquiry,
+        depositReceived: newDeposit,
+        totalAmount: newTotal,
+        remainingAmount: `$${parseInt(newTotal.replace(/\D/g, '')) - parseInt(newDeposit.replace(/\D/g, ''))}`
+      };
+    }
+    return enquiry;
+  }));
+  
+  setEditAmountModal({ isOpen: false, bookingId: null, fieldToEdit: null, totalAmount: "", depositReceived: "" });
+};
+
   const [selectedTab, setSelectedTab] = useState(0);
   const [blockedDates, setBlockedDates] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -612,76 +649,86 @@ export default function AdminDashboard() {
   };
 
   const fetchBookings = async () => {
-    setBookings([
-      {
-        id: "BK123456",
-        clientName: "John Doe",
-        email: "john.doe@example.com",
-        phone: "+1 555-123-4567",
-        eventType: "Wedding Reception",
-        eventDate: "2023-06-12",
-        eventTime: "6:00 PM",
-        street: "123 Main Street",
-        apt: "Apt 4B",
-        city: "New York",
-        state: "NY",
-        message: "Need DJ for our wedding reception from 6PM to midnight",
-        status: "Paid",
-        amount: "$500",
-      },
-      {
-        id: "BK789012",
-        clientName: "Jane Smith",
-        email: "jane.smith@example.com",
-        phone: "+1 555-987-6543",
-        eventType: "Corporate Event",
-        eventDate: "2023-06-18",
-        eventTime: "8:00 PM",
-        street: "456 Business Ave",
-        apt: "",
-        city: "Brooklyn",
-        state: "NY",
-        message: "Annual company party with 100+ guests",
-        status: "Pending",
-        amount: "$750",
-      },
-    ]);
-  };
+  setBookings([
+    {
+      id: "BK123456",
+      clientName: "John Doe",
+      email: "john.doe@example.com",
+      phone: "+1 555-123-4567",
+      eventType: "Wedding Reception",
+      eventDate: "2023-06-12",
+      eventTime: "6:00 PM",
+      street: "123 Main Street",
+      apt: "Apt 4B",
+      city: "New York",
+      state: "NY",
+      message: "Need DJ for our wedding reception from 6PM to midnight",
+      status: "Paid",
+      depositReceived: "$500",
+      totalAmount: "$500",
+      remainingAmount: "$0",
+    },
+    {
+      id: "BK789012",
+      clientName: "Jane Smith",
+      email: "jane.smith@example.com",
+      phone: "+1 555-987-6543",
+      eventType: "Corporate Event",
+      eventDate: "2023-06-18",
+      eventTime: "8:00 PM",
+      street: "456 Business Ave",
+      apt: "",
+      city: "Brooklyn",
+      state: "NY",
+      message: "Annual company party with 100+ guests",
+      status: "Pending",
+      depositReceived: "$750",
+      totalAmount: "$1500",
+      remainingAmount: "$750",
+    },
+  ]);
+};
 
   const fetchEnquiries = async () => {
-    setEnquiries([
-      {
-        id: "EQ123456",
-        clientName: "Alex Johnson",
-        email: "alex.j@example.com",
-        phone: "+1 555-456-7890",
-        eventType: "Birthday Party",
-        eventDate: "2023-07-05",
-        eventTime: "7:00 PM",
-        street: "789 Celebration Lane",
-        apt: "",
-        city: "Queens",
-        state: "NY",
-        message: "Looking for DJ for my 30th birthday party",
-        status: "Pending",
-      },
-      {
-        id: "EQ789012",
-        clientName: "Sarah Williams",
-        email: "sarah.w@example.com",
-        phone: "+1 555-789-0123",
-        eventType: "Anniversary",
-        eventDate: "2023-07-12",
-        eventTime: "5:00 PM",
-        street: "321 Memory Blvd",
-        apt: "Penthouse",
-        city: "Manhattan",
-        state: "NY",
-        message: "25th anniversary celebration with dinner and dancing",
-        status: "Approved",
-      },
-    ]);
-  };
+  setEnquiries([
+    {
+      id: "EQ123456",
+      clientName: "Alex Johnson",
+      email: "alex.j@example.com",
+      phone: "+1 555-456-7890",
+      eventType: "Birthday Party",
+      eventDate: "2023-07-05",
+      eventTime: "7:00 PM",
+      street: "789 Celebration Lane",
+      apt: "",
+      city: "Queens",
+      state: "NY",
+      message: "Looking for DJ for my 30th birthday party",
+      status: "Pending",
+      depositReceived: "$0",
+      totalAmount: "$0",
+      remainingAmount: "$0",
+    },
+    {
+      id: "EQ789012",
+      clientName: "Sarah Williams",
+      email: "sarah.w@example.com",
+      phone: "+1 555-789-0123",
+      eventType: "Anniversary",
+      eventDate: "2023-07-12",
+      eventTime: "5:00 PM",
+      street: "321 Memory Blvd",
+      apt: "Penthouse",
+      city: "Manhattan",
+      state: "NY",
+      message: "25th anniversary celebration with dinner and dancing",
+      status: "Approved",
+      depositReceived: "$500",
+      totalAmount: "$1000",
+      remainingAmount: "$500",
+    },
+  ]);
+};
 
   const fetchAgreements = async () => {
     setAgreements([
@@ -786,20 +833,22 @@ export default function AdminDashboard() {
 
       <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
         <Tab.List className="flex space-x-1 rounded-lg bg-gray-900 p-1 mb-6">
-          {["Block Schedule", "Bookings", "Enquiries", "Agreements"].map((tab) => (
-            <Tab
-              key={tab}
-              className={({ selected }) =>
-                `w-full py-2.5 text-sm font-medium rounded-md transition-all ${
-                  selected
-                    ? "bg-purple-600 text-white"
-                    : "text-gray-300 hover:bg-gray-800"
-                }`
-              }
-            >
-              {tab}
-            </Tab>
-          ))}
+          {["Block Schedule", "Bookings", "Enquiries", "Agreements"].map(
+            (tab) => (
+              <Tab
+                key={tab}
+                className={({ selected }) =>
+                  `w-full py-2.5 text-sm font-medium rounded-md transition-all ${
+                    selected
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-300 hover:bg-gray-800"
+                  }`
+                }
+              >
+                {tab}
+              </Tab>
+            )
+          )}
         </Tab.List>
 
         <Tab.Panels>
@@ -957,7 +1006,13 @@ export default function AdminDashboard() {
                         Message
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Payment Status
+                        Deposit Received
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Total Amount
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Remaining Amount
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Actions
@@ -995,19 +1050,57 @@ export default function AdminDashboard() {
                           {booking.message || "-"}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
+                            {booking.depositReceived}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+                              {booking.totalAmount}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setEditAmountModal({
+                                  isOpen: true,
+                                  bookingId: booking.id,
+                                  totalAmount: booking.totalAmount.replace(
+                                    /\D/g,
+                                    ""
+                                  ),
+                                  depositReceived: booking.depositReceived,
+                                })
+                              }
+                              className="text-purple-400 hover:text-purple-300 text-xs"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs rounded-full ${
-                              booking.status === "Paid"
-                                ? "bg-green-900 text-green-300"
-                                : "bg-yellow-900 text-yellow-300"
+                              parseInt(
+                                booking.remainingAmount.replace(/\D/g, "")
+                              ) > 0
+                                ? "bg-yellow-900 text-yellow-300"
+                                : "bg-green-900 text-green-300"
                             }`}
                           >
-                            {booking.status === "Paid" ? `${booking.amount} paid` : booking.status}
+                            {booking.remainingAmount}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <button
-                            onClick={() => setAgreementModal({ isOpen: true, booking })}
+                            onClick={() =>
+                              setAgreementModal({
+                                isOpen: true,
+                                booking: {
+                                  ...booking,
+                                  amount: booking.depositReceived, // Maintain backward compatibility
+                                },
+                              })
+                            }
                             className="text-purple-400 hover:text-purple-300"
                             title="Send Agreement"
                           >
@@ -1021,7 +1114,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Tab.Panel>
-
           {/* Enquiries Tab */}
           <Tab.Panel>
             <div className="bg-gray-900 rounded-lg p-6">
@@ -1050,6 +1142,15 @@ export default function AdminDashboard() {
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Message
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Deposit Received
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Total Amount
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Remaining Amount
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Status
@@ -1085,6 +1186,69 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
                           {enquiry.message || "-"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+                              {enquiry.depositReceived}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setEditAmountModal({
+                                  isOpen: true,
+                                  bookingId: enquiry.id,
+                                  fieldToEdit: "deposit",
+                                  depositReceived:
+                                    enquiry.depositReceived.replace(/\D/g, ""),
+                                  totalAmount: enquiry.totalAmount.replace(
+                                    /\D/g,
+                                    ""
+                                  ),
+                                })
+                              }
+                              className="text-purple-400 hover:text-purple-300 text-xs"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+                              {enquiry.totalAmount}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setEditAmountModal({
+                                  isOpen: true,
+                                  bookingId: enquiry.id,
+                                  fieldToEdit: "total",
+                                  depositReceived:
+                                    enquiry.depositReceived.replace(/\D/g, ""),
+                                  totalAmount: enquiry.totalAmount.replace(
+                                    /\D/g,
+                                    ""
+                                  ),
+                                })
+                              }
+                              className="text-purple-400 hover:text-purple-300 text-xs"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              parseInt(
+                                enquiry.remainingAmount.replace(/\D/g, "")
+                              ) > 0
+                                ? "bg-yellow-900 text-yellow-300"
+                                : "bg-green-900 text-green-300"
+                            }`}
+                          >
+                            {enquiry.remainingAmount}
+                          </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span
@@ -1124,7 +1288,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Tab.Panel>
-
           {/* Agreements Tab */}
           <Tab.Panel>
             <div className="bg-gray-900 rounded-lg p-6">
@@ -1197,10 +1360,14 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this blocked schedule?</p>
+            <p className="mb-6">
+              Are you sure you want to delete this blocked schedule?
+            </p>
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => setDeleteConfirmation({ isOpen: false, id: null })}
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, id: null })
+                }
                 className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
               >
                 No
@@ -1221,10 +1388,14 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Approval</h3>
-            <p className="mb-6">Are you sure you want to approve this enquiry?</p>
+            <p className="mb-6">
+              Are you sure you want to approve this enquiry?
+            </p>
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => setApprovalConfirmation({ isOpen: false, id: null })}
+                onClick={() =>
+                  setApprovalConfirmation({ isOpen: false, id: null })
+                }
                 className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
               >
                 No
@@ -1244,8 +1415,10 @@ export default function AdminDashboard() {
       {denyDialog.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">Schedule Meeting for Denial</h3>
-            
+            <h3 className="text-lg font-bold mb-4">
+              Schedule Meeting for Denial
+            </h3>
+
             <div className="mb-4 p-4 bg-gray-700 rounded-lg">
               <h4 className="font-medium mb-2">Client Details:</h4>
               <p>Name: {denyDialog.enquiry.clientName}</p>
@@ -1259,18 +1432,22 @@ export default function AdminDashboard() {
                 <input
                   type="date"
                   value={denyDialog.date}
-                  onChange={(e) => setDenyDialog({ ...denyDialog, date: e.target.value })}
+                  onChange={(e) =>
+                    setDenyDialog({ ...denyDialog, date: e.target.value })
+                  }
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
                   required
                   min={new Date().toISOString().split("T")[0]}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Time *</label>
                 <select
                   value={denyDialog.time}
-                  onChange={(e) => setDenyDialog({ ...denyDialog, time: e.target.value })}
+                  onChange={(e) =>
+                    setDenyDialog({ ...denyDialog, time: e.target.value })
+                  }
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
                   required
                 >
@@ -1283,23 +1460,35 @@ export default function AdminDashboard() {
                   <option value="06:00 PM">06:00 PM</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-1">Message *</label>
+                <label className="block text-sm font-medium mb-1">
+                  Message *
+                </label>
                 <textarea
                   value={denyDialog.message}
-                  onChange={(e) => setDenyDialog({ ...denyDialog, message: e.target.value })}
+                  onChange={(e) =>
+                    setDenyDialog({ ...denyDialog, message: e.target.value })
+                  }
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
                   required
                   placeholder="Enter your message to the client"
                   rows="3"
                 />
               </div>
-              
+
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={() => setDenyDialog({ isOpen: false, enquiry: null, date: "", time: "", message: "" })}
+                  onClick={() =>
+                    setDenyDialog({
+                      isOpen: false,
+                      enquiry: null,
+                      date: "",
+                      time: "",
+                      message: "",
+                    })
+                  }
                   className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
                 >
                   Cancel
@@ -1324,6 +1513,78 @@ export default function AdminDashboard() {
           onSend={sendAgreement}
         />
       )}
+
+      {/* Edit Amount Modal */}
+{editAmountModal.isOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+      <h3 className="text-lg font-bold mb-4">
+        Edit {editAmountModal.fieldToEdit === 'deposit' ? 'Deposit Received' : 'Total Amount'}
+      </h3>
+      <form onSubmit={handleUpdateAmount} className="space-y-4">
+        {editAmountModal.fieldToEdit === 'deposit' ? (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Deposit Received ($)
+            </label>
+            <input
+              type="number"
+              value={editAmountModal.depositReceived}
+              onChange={(e) => setEditAmountModal({
+                ...editAmountModal,
+                depositReceived: e.target.value
+              })}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Total Amount ($)
+            </label>
+            <input
+              type="number"
+              value={editAmountModal.totalAmount}
+              onChange={(e) => setEditAmountModal({
+                ...editAmountModal,
+                totalAmount: e.target.value
+              })}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
+          </div>
+        )}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Remaining Amount
+          </label>
+          <input
+            type="text"
+            value={`$${parseInt(editAmountModal.totalAmount || 0) - parseInt(editAmountModal.depositReceived || 0)}`}
+            readOnly
+            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
+          />
+        </div>
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setEditAmountModal({ isOpen: false, bookingId: null, fieldToEdit: null, totalAmount: "", depositReceived: "" })}
+            className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
