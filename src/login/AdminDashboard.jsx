@@ -566,7 +566,6 @@ function AgreementModal({ booking, onClose, onSend }) {
   );
 }
 
-// ... (keep the rest of your AdminDashboard component exactly as is) ...
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [blockedDates, setBlockedDates] = useState([]);
@@ -615,7 +614,7 @@ export default function AdminDashboard() {
   const fetchBookings = async () => {
     setBookings([
       {
-        id: 1,
+        id: "BK123456",
         clientName: "John Doe",
         email: "john.doe@example.com",
         phone: "+1 555-123-4567",
@@ -631,7 +630,7 @@ export default function AdminDashboard() {
         amount: "$500",
       },
       {
-        id: 2,
+        id: "BK789012",
         clientName: "Jane Smith",
         email: "jane.smith@example.com",
         phone: "+1 555-987-6543",
@@ -652,7 +651,7 @@ export default function AdminDashboard() {
   const fetchEnquiries = async () => {
     setEnquiries([
       {
-        id: 1,
+        id: "EQ123456",
         clientName: "Alex Johnson",
         email: "alex.j@example.com",
         phone: "+1 555-456-7890",
@@ -667,7 +666,7 @@ export default function AdminDashboard() {
         status: "Pending",
       },
       {
-        id: 2,
+        id: "EQ789012",
         clientName: "Sarah Williams",
         email: "sarah.w@example.com",
         phone: "+1 555-789-0123",

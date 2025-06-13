@@ -59,13 +59,13 @@ export default function PaymentLookup() {
       </h1>
 
       {!searchResults ? (
-        <div className="max-w-2xl mx-auto bg-gray-900 rounded-lg p-6">
+        <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6">
           <div className="flex space-x-4 mb-6">
             <button
               onClick={() => setSearchMethod('email')}
               className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-300'}`}
             >
-              Search by Email/Booking ID
+              Search by Email & Unique ID
             </button>
             <button
               onClick={() => setSearchMethod('id')}
@@ -86,7 +86,7 @@ export default function PaymentLookup() {
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-                    placeholder="BK123456/EV123456"
+                    placeholder="BK123456/EQ123456"
                     required
                   />
                 </div>
@@ -103,6 +103,7 @@ export default function PaymentLookup() {
                       onChange={(e) => setSearchEmail(e.target.value)}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
                       placeholder="john@example.com"
+                      required
                     />
                   </div>
                   <div>
@@ -112,19 +113,21 @@ export default function PaymentLookup() {
                       value={searchBookingId}
                       onChange={(e) => setSearchBookingId(e.target.value)}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-                      placeholder="BK123456/EV123456"
+                      placeholder="BK123456/EQ123456"
+                      required
                     />
                   </div>
                 </div>
               </div>
             )}
-
+            <center>
             <button
               type="submit"
               className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium"
             >
               Search Booking
             </button>
+            </center>
           </form>
         </div>
       ) : (
