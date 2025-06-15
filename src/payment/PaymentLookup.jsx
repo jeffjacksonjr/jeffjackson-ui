@@ -10,23 +10,45 @@ export default function PaymentLookup() {
 //   const navigate = useNavigate();
 
   // Mock data - replace with API calls
-  const mockClientData = {
+  const mockEnquiryData = {
+    id: 'EQ123456',
+    name: 'Adam Rose',
+    email: 'adam@example.com',
+    phone: '+1 555-789-0456',
+    address: '456 Melody Lane, Apt 4B, Brooklyn, NY 11201',
+    eventType: 'Corporate Party',
+    type: "enquiry",
+    eventDate: '2023-07-18',
+    eventTime: '5:00 PM',
+    totalAmount: 1500,
+    paidAmount: 0,
+    askforDeposit: true,
+    depositAmountAsk: 200,
+    depositAmountReceived: 0,
+    paymentHistory: []
+  };
+
+  const mockBookingData = {
     id: 'BK123456',
     name: 'Sarah Johnson',
     email: 'sarah.j@example.com',
     phone: '+1 555-789-0123',
     address: '123 Melody Lane, Apt 4B, Brooklyn, NY 11201',
     eventType: 'Wedding Reception',
+    type: "booking",
     eventDate: '2023-07-15',
     eventTime: '6:00 PM',
     totalAmount: 1200,
     paidAmount: 600,
+    askforDeposit: false,
+    depositAmountAsk: null,
+    depositAmountReceived: 200,
     paymentHistory: [
       {
         orderId: 'ORD-78901',
         transactionNo: 'TXN-78901234',
         status: 'Success',
-        amount: 600,
+        amount: 200,
         date: '2023-06-10 21:43:37'
       }
     ]
@@ -34,15 +56,34 @@ export default function PaymentLookup() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Simulate API call with mock data
+    // Simulate API call with mock data based on search input
     setTimeout(() => {
-      setSearchResults(mockClientData);
+      // If searching by ID, check the prefix
+      if (searchMethod === 'id' && searchId) {
+        if (searchId.startsWith('BK')) {
+          setSearchResults(mockBookingData);
+        } else if (searchId.startsWith('EQ')) {
+          setSearchResults(mockEnquiryData);
+        }
+      } 
+      // If searching by email/booking ID, check the booking ID prefix
+      else if (searchMethod === 'email' && searchBookingId) {
+        if (searchBookingId.startsWith('BK')) {
+          setSearchResults(mockBookingData);
+        } else if (searchBookingId.startsWith('EQ')) {
+          setSearchResults(mockEnquiryData);
+        }
+      }
+      // Default to booking data if no prefix match
+      else {
+        setSearchResults(mockBookingData);
+      }
     }, 500);
   };
 
-  const handlePayment = () => {
+  const handlePayment = (amount) => {
     // Simulate payment processing
-    alert(`Payment of $${mockClientData.totalAmount - mockClientData.paidAmount} would be processed here`);
+    alert(`Payment of $${amount} would be processed here`);
   };
 
   const resetSearch = () => {
@@ -55,7 +96,7 @@ export default function PaymentLookup() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-8">
-        <span className="text-purple-400">Payment</span> Portal
+        <a href='/payment'><span className="text-purple-400">Payment</span> Portal</a>
       </h1>
 
       {!searchResults ? (
@@ -78,7 +119,6 @@ export default function PaymentLookup() {
           <form onSubmit={handleSearch} className="space-y-6">
             {searchMethod === 'id' ? (
               <div>
-                {/* <h2 className="text-xl font-bold mb-4">Search by Unique Event ID</h2> */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Unique Event ID *</label>
                   <input
@@ -93,7 +133,6 @@ export default function PaymentLookup() {
               </div>
             ) : (
               <div>
-                {/* <h2 className="text-xl font-bold mb-4">Search by Email or Booking ID</h2> */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Email Address</label>
@@ -155,6 +194,7 @@ export default function PaymentLookup() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Event</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Event Time</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deposit</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Remaining Amount</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
                   </tr>
@@ -170,12 +210,28 @@ export default function PaymentLookup() {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">${searchResults.totalAmount}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
+                      {searchResults.askforDeposit ? (
+                        searchResults.depositAmountReceived > 0 ? (
+                          `$${searchResults.depositAmountReceived} (Paid)`
+                        ) : (
+                          <button
+                            onClick={() => handlePayment(searchResults.depositAmountAsk)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm"
+                          >
+                            Pay ${searchResults.depositAmountAsk}
+                          </button>
+                        )
+                      ) : (
+                        `$${searchResults.depositAmountReceived || 0} (Paid)`
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       ${searchResults.totalAmount - searchResults.paidAmount}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {(searchResults.totalAmount - searchResults.paidAmount) > 0 && (
                         <button
-                          onClick={handlePayment}
+                          onClick={() => handlePayment(searchResults.totalAmount - searchResults.paidAmount)}
                           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm"
                         >
                           Pay ${searchResults.totalAmount - searchResults.paidAmount}
@@ -189,43 +245,45 @@ export default function PaymentLookup() {
           </div>
 
           {/* Payment History Table */}
-          <div className="bg-gray-900 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Payment History</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Unique ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Transaction No.</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payment Status/Mode</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Transaction Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {searchResults.paymentHistory.map((payment, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 whitespace-nowrap">{searchResults.id}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">{payment.orderId}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">{payment.transactionNo}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          payment.status.includes('Success') ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">${payment.amount}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {payment.date}
-                      </td>
+          {searchResults.paymentHistory.length > 0 && (
+            <div className="bg-gray-900 rounded-lg p-6">
+              <h2 className="text-xl font-bold mb-4">Payment History</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Unique ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Transaction No.</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payment Status/Mode</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Transaction Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {searchResults.paymentHistory.map((payment, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 whitespace-nowrap">{searchResults.id}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{payment.orderId}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{payment.transactionNo}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            payment.status.includes('Success') ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                          }`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">${payment.amount}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {payment.date}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
