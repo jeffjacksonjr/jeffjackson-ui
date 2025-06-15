@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PropTypes from 'prop-types'; // Add this line
+import PropTypes from 'prop-types';
 
 export default function HeroSection() {
   const [displayText, setDisplayText] = useState('');
   const fullText = 'Jeff Jackson';
   const [isAnimating, setIsAnimating] = useState(true);
+  const [gradientActive, setGradientActive] = useState(false);
   const navigate = useNavigate();
+  const gradientRef = useRef(null);
 
   useEffect(() => {
     let currentIndex = 0;
@@ -19,6 +21,8 @@ export default function HeroSection() {
         setTimeout(typeWriter, typingSpeed);
       } else {
         setIsAnimating(false);
+        // Start gradient animation after typing completes
+        setGradientActive(true);
       }
     };
 
@@ -28,7 +32,18 @@ export default function HeroSection() {
 
   return (
     <section id="home" className="relative h-screen flex items-center justify-center bg-black text-white overflow-hidden">
-      <div className="absolute inset-0 bg-purple-900 opacity-50"></div>
+      {/* Gradient Background */}
+      <div 
+        ref={gradientRef}
+        className={`absolute inset-0 transition-opacity duration-1000 ${gradientActive ? 'opacity-100' : 'opacity-0'}`}
+        style={{
+          background: gradientActive 
+            ? 'linear-gradient(135deg, rgba(76, 29, 149, 0.8), rgba(49, 0, 98, 0.9), rgba(76, 29, 149, 0.8)'
+            : 'transparent',
+          backgroundSize: gradientActive ? '400% 400%' : '100% 100%',
+          animation: gradientActive ? 'gradientFlow 15s ease infinite' : 'none'
+        }}
+      ></div>
       
       <div className="container mx-auto px-6 z-10 text-center">
         <h1 className="text-5xl md:text-7xl font-bold mb-6">
@@ -53,7 +68,7 @@ export default function HeroSection() {
         </div>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 h-16 flex justify-center items-end space-x-1">
+      <div className="absolute bottom-0 left-0 right-0 h-16 flex justify-center items-end space-x-1 z-10">
         {[...Array(20)].map((_, i) => (
           <div 
             key={i}
@@ -66,6 +81,21 @@ export default function HeroSection() {
           ></div>
         ))}
       </div>
+
+      {/* Add CSS for the gradient animation */}
+      <style jsx>{`
+        @keyframes gradientFlow {
+          0% {
+            background-position: 0% 0%;
+          }
+          50% {
+            background-position: 100% 100%;
+          }
+          100% {
+            background-position: 0% 0%;
+          }
+        }
+      `}</style>
     </section>
   );
 }
