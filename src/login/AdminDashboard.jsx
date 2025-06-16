@@ -557,11 +557,11 @@ function AgreementModal({ booking, onClose, onSend }) {
                 {/* Deposit Received (readonly) */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Deposit Received
+                    Deposit
                   </label>
                   <input
                     type="text"
-                    value={booking.amount}
+                    value={booking.depositReceived || booking.amount}
                     readOnly
                     className="w-full text-purple-400 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
                   />
@@ -746,6 +746,7 @@ export default function AdminDashboard() {
         email: "john.doe@example.com",
         phone: "+1 555-123-4567",
         eventType: "Wedding Reception",
+        type: "booking",
         eventDate: "2023-06-12",
         eventTime: "6:00 PM",
         street: "123 Main Street",
@@ -764,6 +765,7 @@ export default function AdminDashboard() {
         email: "jane.smith@example.com",
         phone: "+1 555-987-6543",
         eventType: "Corporate Event",
+        type: "booking",
         eventDate: "2023-06-18",
         eventTime: "8:00 PM",
         street: "456 Business Ave",
@@ -783,28 +785,11 @@ export default function AdminDashboard() {
     setEnquiries([
       {
         id: "EQ123456",
-        clientName: "Alex Johnson",
-        email: "alex.j@example.com",
-        phone: "+1 555-456-7890",
-        eventType: "Birthday Party",
-        eventDate: "2023-07-05",
-        eventTime: "7:00 PM",
-        street: "789 Celebration Lane",
-        apt: "",
-        city: "Queens",
-        state: "NY",
-        message: "Looking for DJ for my 30th birthday party",
-        status: "Pending",
-        depositReceived: "$0",
-        totalAmount: "$0",
-        remainingAmount: "$0",
-      },
-      {
-        id: "EQ789012",
         clientName: "Sarah Williams",
         email: "sarah.w@example.com",
         phone: "+1 555-789-0123",
         eventType: "Anniversary",
+        type: "enquiry",
         eventDate: "2023-07-12",
         eventTime: "5:00 PM",
         street: "321 Memory Blvd",
@@ -817,6 +802,25 @@ export default function AdminDashboard() {
         totalAmount: "$1000",
         remainingAmount: "$500",
       },
+      {
+        id: "EQ789012",
+        clientName: "Alex Johnson",
+        email: "alex.j@example.com",
+        phone: "+1 555-456-7890",
+        eventType: "Birthday Party",
+        type: "enquiry",
+        eventDate: "2023-07-05",
+        eventTime: "7:00 PM",
+        street: "789 Celebration Lane",
+        apt: "",
+        city: "Queens",
+        state: "NY",
+        message: "Looking for DJ for my 30th birthday party",
+        status: "Pending",
+        depositReceived: "$0",
+        totalAmount: "$0",
+        remainingAmount: "$0",
+      }
     ]);
   };
 
@@ -862,32 +866,32 @@ export default function AdminDashboard() {
   };
 
   const handleEnquiryAction = (id, action) => {
-    const enquiry = enquiries.find((e) => e.id === id);
+  const enquiry = enquiries.find((e) => e.id === id);
 
-    if (action === "approve") {
-      setApprovalConfirmation({
-        isOpen: true,
-        id: id,
-      });
-    } else {
-      setDenyDialog({
-        isOpen: true,
-        enquiry: enquiry,
-        date: "",
-        time: "",
-        message: "",
-      });
-    }
-  };
+  if (action === "approve") {
+    setAgreementModal({
+      isOpen: true,
+      booking: enquiry, // We're reusing the same modal, so we'll pass the enquiry as booking
+    });
+  } else {
+    setDenyDialog({
+      isOpen: true,
+      enquiry: enquiry,
+      date: "",
+      time: "",
+      message: "",
+    });
+  }
+};
 
   const approveEnquiry = async () => {
-    console.log("Approving enquiry:", approvalConfirmation.id);
-    await fetchEnquiries();
-    setApprovalConfirmation({
-      isOpen: false,
-      id: null,
-    });
-  };
+  console.log("Approving enquiry:", approvalConfirmation.id);
+  await fetchEnquiries();
+  setApprovalConfirmation({
+    isOpen: false,
+    id: null,
+  });
+};
 
   const sendDenial = async (e) => {
     e.preventDefault();
@@ -1603,12 +1607,12 @@ export default function AdminDashboard() {
 
       {/* Agreement Modal */}
       {agreementModal.isOpen && (
-        <AgreementModal
-          booking={agreementModal.booking}
-          onClose={() => setAgreementModal({ isOpen: false, booking: null })}
-          onSend={sendAgreement}
-        />
-      )}
+  <AgreementModal
+    booking={agreementModal.booking}
+    onClose={() => setAgreementModal({ isOpen: false, booking: null })}
+    onSend={sendAgreement}
+  />
+)}
 
       {/* Edit Amount Modal */}
       {editAmountModal.isOpen && (
