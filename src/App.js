@@ -6,11 +6,13 @@ import BookingWizard from './booking/BookingWizard'
 import LoginPage from './login/LoginPage'
 import AdminDashboard from './login/AdminDashboard';
 import PaymentLookup from './payment/PaymentLookup';
+import ScrollToTop from './utils/ScrollToTop';
 
 function App() {
   return (
     <>
     <Navbar/>
+    <ScrollToTop/>
     <Routes>
       <Route path= "*" element={<Home/>}/>
       <Route path= "/" element={<Home/>}/>
