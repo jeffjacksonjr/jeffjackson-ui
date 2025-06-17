@@ -455,7 +455,7 @@ function AgreementModal({ booking, onClose, onSend }) {
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.5);
       doc.line(margin + 5, yPos, margin + 85, yPos);
-      doc.line(margin + 100, yPos, margin + 180, yPos);
+      doc.line(margin + 100, yPos, margin + 170, yPos);
 
       yPos += 10;
       doc.setFontSize(8);
@@ -646,6 +646,11 @@ function AgreementModal({ booking, onClose, onSend }) {
 }
 
 export default function AdminDashboard() {
+  const [searchMethod, setSearchMethod] = useState('email');
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchBookingId, setSearchBookingId] = useState('');
+  const [searchId, setSearchId] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
   const [editAmountModal, setEditAmountModal] = useState({
     isOpen: false,
     bookingId: null,
@@ -698,7 +703,6 @@ export default function AdminDashboard() {
   const [blockedDates, setBlockedDates] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
-  const [agreements, setAgreements] = useState([]);
   const [newBlock, setNewBlock] = useState({
     date: "",
     time: "",
@@ -728,7 +732,6 @@ export default function AdminDashboard() {
     fetchBlockedDates();
     fetchBookings();
     fetchEnquiries();
-    fetchAgreements();
   }, []);
 
   const fetchBlockedDates = async () => {
@@ -824,24 +827,6 @@ export default function AdminDashboard() {
     ]);
   };
 
-  const fetchAgreements = async () => {
-    setAgreements([
-      {
-        id: 1,
-        client: "Mike Brown",
-        dateSent: "2023-06-01",
-        status: "Signed",
-        fileUrl: "#",
-      },
-      {
-        id: 2,
-        client: "Emily Davis",
-        dateSent: "2023-06-05",
-        status: "Pending",
-      },
-    ]);
-  };
-
   const handleBlockDate = async (e) => {
     e.preventDefault();
     console.log("Blocking date:", newBlock);
@@ -918,6 +903,35 @@ export default function AdminDashboard() {
     // After sending, you might want to refresh the bookings list
     await fetchBookings();
   };
+
+  const handleSearch = (e) => {
+  e.preventDefault();
+  
+  // Mock data - in a real app you would fetch this from your API
+  const mockAgreement = {
+    id: 'BK123456',
+    name: 'Adam Rose',
+    email: 'adam@example.com',
+    phone: '+1 555-789-0456',
+    address: '456 Melody Lane, Apt 4B, Brooklyn, NY 11201',
+    eventType: 'Corporate Party',
+    type: "booking",
+    eventDate: '2023-07-18',
+    eventTime: '5:00 PM',
+    pdfUrl: "https://conasems-ava-prod.s3.sa-east-1.amazonaws.com/aulas/ava/dummy-1641923583.pdf" // Replace with your mock PDF URL
+  };
+
+  // Simple validation - in a real app you would check against your database
+  if ((searchMethod === 'email' && 
+       searchEmail === 'adam@example.com' && 
+       searchBookingId === 'BK123456') ||
+      (searchMethod === 'id' && searchId === 'BK123456')) {
+    setSearchResults(mockAgreement);
+  } else {
+    alert('No agreement found with those details');
+    setSearchResults(null);
+  }
+};
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -1389,69 +1403,133 @@ export default function AdminDashboard() {
           </Tab.Panel>
           
           {/* Agreements Tab */}
-          <Tab.Panel>
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Agreement Tracking</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-700">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Client
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Date Sent
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {agreements.map((agreement) => (
-                      <tr key={agreement.id}>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {agreement.client}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {agreement.dateSent}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              agreement.status === "Signed"
-                                ? "bg-green-900 text-green-300"
-                                : "bg-yellow-900 text-yellow-300"
-                            }`}
-                          >
-                            {agreement.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {agreement.fileUrl ? (
-                            <a
-                              href={agreement.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-purple-400 hover:text-purple-300 flex items-center"
-                            >
-                              <DocumentTextIcon className="h-4 w-4 mr-1" />
-                              View
-                            </a>
-                          ) : (
-                            <span className="text-gray-400">Pending</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+<Tab.Panel>
+  <div className="bg-gray-900 rounded-lg p-6">
+    
+    
+    {/* Search Form */}
+    <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-6">View Agreements</h2>
+      <div className="flex space-x-4 mb-6">
+        <button
+          onClick={() => setSearchMethod('email')}
+          className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+        >
+          Search by Email & Unique ID
+        </button>
+        <button
+          onClick={() => setSearchMethod('id')}
+          className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+        >
+          Search by Unique ID
+        </button>
+      </div>
+
+      <form onSubmit={handleSearch} className="space-y-6">
+        {searchMethod === 'id' ? (
+          <div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Unique ID *</label>
+              <input
+                type="text"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                placeholder="BK123456"
+                required
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Unique ID *</label>
+                <input
+                  type="text"
+                  value={searchBookingId}
+                  onChange={(e) => setSearchBookingId(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                  placeholder="BK123456"
+                  required
+                />
               </div>
             </div>
-          </Tab.Panel>
+          </div>
+        )}
+        <center>
+          <button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium"
+          >
+            View Agreement
+          </button>
+        </center>
+      </form>
+    </div>
+
+    {/* Search Results */}
+    {searchResults && (
+      <div className="bg-gray-900 rounded-lg p-6">
+        <hr/>
+        <h3 className="mt-5 text-lg font-bold mb-4">Agreement Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-sm text-gray-400">Booking ID</p>
+            <p className="font-medium">{searchResults.id}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Client Name</p>
+            <p className="font-medium">{searchResults.name}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Email</p>
+            <p className="font-medium">{searchResults.email}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Phone</p>
+            <p className="font-medium">{searchResults.phone}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Event Type</p>
+            <p className="font-medium">{searchResults.eventType}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Event Date</p>
+            <p className="font-medium">{searchResults.eventDate} at {searchResults.eventTime}</p>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-sm text-gray-400">Address</p>
+            <p className="font-medium">{searchResults.address}</p>
+          </div>
+        </div>
+        
+        <div className="flex justify-center">
+          <a
+            href={searchResults.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
+          >
+            <DocumentTextIcon className="h-5 w-5 mr-2" />
+            View PDF Agreement
+          </a>
+        </div>
+      </div>
+    )}
+  </div>
+</Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
 
