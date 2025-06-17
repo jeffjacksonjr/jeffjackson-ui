@@ -5,7 +5,7 @@ export default function AboutSection() {
     <section id="about" className="py-20 bg-black text-white">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-          About <span className="text-purple-400">DJ Jeff Jackson</span>
+          About <span className="text-purple-400">Jeff Jackson</span>
         </h2>
 
         <div className="flex flex-col md:flex-row items-center gap-12">
