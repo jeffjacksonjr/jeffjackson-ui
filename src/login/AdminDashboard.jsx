@@ -252,33 +252,37 @@ function AgreementModal({ booking, onClose, onSend }) {
       doc.setTextColor(0, 0, 0); // Reset to black
 
       // Client Details Section
-      checkPageBreak(90);
-      addSectionBackground(yPos, 90, COLORS.GRAY_800);
+checkPageBreak(90);
+addSectionBackground(yPos, 90, COLORS.GRAY_800);
 
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(255, 255, 255);
-      doc.text("CLIENT DETAILS", margin, yPos + 5);
+doc.setFontSize(14);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(255, 255, 255);
+doc.text("CLIENT DETAILS", margin, yPos + 5);
 
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
+yPos += 20;
+doc.setFontSize(10);
+doc.setFont("helvetica", "normal");
 
-      // Two column layout for client details
-      const leftCol = margin + 5;
-      const rightCol = pageWidth / 2 + 10;
+// Two column layout for client details
+const leftCol = margin + 5;
+const rightCol = pageWidth / 2 + 10;
 
-      doc.text(`Client Name: ${booking.clientName}`, leftCol, yPos);
-      doc.text(`Phone: ${booking.phone}`, rightCol, yPos);
-      yPos += 12;
+// Add ID field (either booking ID or enquiry ID)
+doc.text(`ID: ${booking.id}`, leftCol, yPos);
+yPos += 12;  // Move down for the next field
 
-      doc.text(`Event Date: ${formatDate(booking.eventDate)}`, leftCol, yPos);
-      doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
-      yPos += 12;
+doc.text(`Client Name: ${booking.clientName}`, leftCol, yPos);
+doc.text(`Phone: ${booking.phone}`, rightCol, yPos);
+yPos += 12;
 
-      doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
-      doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
-      yPos += 12;
+doc.text(`Event Date: ${formatDate(booking.eventDate)}`, leftCol, yPos);
+doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
+yPos += 12;
+
+doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
+doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
+yPos += 12;
 
       // Address spans full width
       const addressText = `Event Location: ${booking.street}${
