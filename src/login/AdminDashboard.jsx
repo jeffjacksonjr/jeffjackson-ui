@@ -1408,7 +1408,7 @@ export default function AdminDashboard() {
     
     
     {/* Search Form */}
-    <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6">
+    <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6 border border-gray-500">
       <h2 className="text-xl font-bold mb-6">View Agreements</h2>
       <div className="flex space-x-4 mb-6">
         <button
@@ -1482,7 +1482,6 @@ export default function AdminDashboard() {
     {/* Search Results */}
     {searchResults && (
       <div className="bg-gray-900 rounded-lg p-6">
-        <hr/>
         <h3 className="mt-5 text-lg font-bold mb-4">Agreement Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
