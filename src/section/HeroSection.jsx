@@ -58,7 +58,14 @@ export default function HeroSection() {
         <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
           Spinning the hottest tracks and creating unforgettable experiences
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <button 
+            onClick={() => navigate('#contact')} 
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+          >
+            Enquire Now
+          </button>
+          <span className="text-purple-400 hidden sm:block">|</span>
           <button 
             onClick={() => navigate('/book-now')} 
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"

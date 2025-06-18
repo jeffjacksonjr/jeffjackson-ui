@@ -114,6 +114,7 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
               onChange={(e) => setEmail(e.target.value)}
               className="flex-grow bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
               placeholder="recipient@example.com"
+              disabled
             />
 
             <button

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ScrollToTop from '../utils/ScrollToTop'
 
 export default function BookingWizard() {
   const [step, setStep] = useState(1);
@@ -70,15 +71,20 @@ export default function BookingWizard() {
         )}
         
         {step === 2 && (
+          <>
+          <ScrollToTop/>
           <TimeSelectionStep 
             date={selectedDate} 
             times={isWeekend(selectedDate) ? weekendTimes : weekdayTimes}
             onSelectTime={handleTimeSelect}
             onBack={() => setStep(1)}
           />
+          </>
         )}
         
         {step === 3 && (
+          <>
+          <ScrollToTop/>
           <ClientDetailsStep
             date={selectedDate}
             time={selectedTime}
@@ -88,9 +94,12 @@ export default function BookingWizard() {
             onBack={() => setStep(2)}
             currentPrice={currentPrice}
           />
+          </>
         )}
         
         {step === 4 && (
+          <>
+          <ScrollToTop/>
           <CheckoutStep
             date={selectedDate}
             time={selectedTime}
@@ -99,6 +108,7 @@ export default function BookingWizard() {
             onConfirm={() => navigate('/confirmation')}
             currentPrice={currentPrice}
           />
+          </>
         )}
       </div>
     </div>

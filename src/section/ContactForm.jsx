@@ -7,6 +7,7 @@ export default function ContactForm() {
     email: '',
     phone: '',
     eventType: '',
+    otherEventType: '',
     eventDate: '',
     address: '',
     city: '',
@@ -45,6 +46,9 @@ export default function ContactForm() {
       newErrors.email = 'Email is invalid';
     }
     if (!formData.eventType) newErrors.eventType = 'Event type is required';
+    if (formData.eventType === 'Other' && !formData.otherEventType) {
+      newErrors.otherEventType = 'Please specify your event type';
+    }
     if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
     if (!formData.address) newErrors.address = 'Address is required';
     if (!formData.city) newErrors.city = 'City is required';
@@ -71,6 +75,7 @@ export default function ContactForm() {
           email: '',
           phone: '',
           eventType: '',
+          otherEventType: '',
           eventDate: '',
           address: '',
           city: '',
@@ -93,7 +98,7 @@ export default function ContactForm() {
 
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-1/2">
-            <h3 className="text-2xl font-semibold mb-6">Booking & Enquiries</h3>
+            <h3 className="text-2xl font-semibold mb-6">Enquiry</h3>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -137,50 +142,73 @@ export default function ContactForm() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="phone" className="block mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
+  <div>
+    <label htmlFor="phone" className="block mb-2">
+      Phone Number
+    </label>
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      value={formData.phone}
+      onChange={handleChange}
+      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+    />
+  </div>
 
-                <div>
-                  <label htmlFor="eventType" className="block mb-2">
-                    Event Type *
-                  </label>
-                  <select
-                    id="eventType"
-                    name="eventType"
-                    value={formData.eventType}
-                    onChange={handleChange}
-                    className={`w-full bg-gray-800 border ${
-                      errors.eventType ? "border-red-500" : "border-gray-700"
-                    } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                  >
-                    <option value="">Select an option</option>
-                    <option value="Wedding">Wedding</option>
-                    <option value="Corporate">Corporate Event</option>
-                    <option value="Club">Club Night</option>
-                    <option value="Festival">Festival</option>
-                    <option value="Private">Private Party</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  {errors.eventType && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.eventType}
-                    </p>
-                  )}
-                </div>
-              </div>
+  <div>
+    <label htmlFor="eventType" className="block mb-2">
+      Event Type *
+    </label>
+    <select
+      id="eventType"
+      name="eventType"
+      value={formData.eventType}
+      onChange={handleChange}
+      className={`w-full bg-gray-800 border ${
+        errors.eventType ? "border-red-500" : "border-gray-700"
+      } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+    >
+      <option value="">Select an option</option>
+      <option value="Wedding">Wedding</option>
+      <option value="Corporate">Corporate Event</option>
+      <option value="Club">Club Night</option>
+      <option value="Festival">Festival</option>
+      <option value="Private">Private Party</option>
+      <option value="Other">Other</option>
+    </select>
+    {errors.eventType && (
+      <p className="text-red-500 text-sm mt-1">
+        {errors.eventType}
+      </p>
+    )}
+  </div>
 
-              {/* Event Date Field */}
+  {/* Move the Other field outside the grid and make it full width */}
+  {formData.eventType === 'Other' && (
+    <div className="col-span-2"> {/* This spans both columns */}
+      <label htmlFor="otherEventType" className="block mb-2">
+        Please specify your event type *
+      </label>
+      <input
+        type="text"
+        id="otherEventType"
+        name="otherEventType"
+        value={formData.otherEventType}
+        onChange={handleChange}
+        className={`w-full bg-gray-800 border ${
+          errors.otherEventType ? "border-red-500" : "border-gray-700"
+        } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+      />
+      {errors.otherEventType && (
+        <p className="text-red-500 text-sm mt-1">
+          {errors.otherEventType}
+        </p>
+      )}
+    </div>
+  )}
+</div>
+
               <div>
                 <label htmlFor="eventDate" className="block mb-2">
                   Event Date *
@@ -196,7 +224,7 @@ export default function ContactForm() {
                     className={`w-full bg-gray-800 border ${
                       errors.eventDate ? "border-red-500" : "border-gray-700"
                     } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    onClick={(e) => e.target.showPicker()} // This line makes it work immediately
+                    onClick={(e) => e.target.showPicker()}
                   />
                 </div>
                 {errors.eventDate && (
@@ -206,7 +234,6 @@ export default function ContactForm() {
                 )}
               </div>
 
-              {/* Address Field */}
               <div>
                 <label htmlFor="address" className="block mb-2">
                   Complete Address *
@@ -227,8 +254,7 @@ export default function ContactForm() {
                 )}
               </div>
 
-              {/* City and Postal Code */}
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="city" className="block mb-2">City *</label>
                   <input
@@ -254,9 +280,8 @@ export default function ContactForm() {
                   />
                   {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>}
                 </div>
-              </div> */}
+              </div>
 
-              {/* Message Field */}
               <div>
                 <label htmlFor="message" className="block mb-2">
                   Message *
@@ -307,7 +332,7 @@ export default function ContactForm() {
                 <div>
                   <h4 className="font-bold">Email</h4>
                   <a
-                    href="mailto:bookings@djguy.com"
+                    href="mailto:jefferyj829@yahoo.com"
                     className="text-purple-400 hover:underline"
                   >
                     jefferyj829@yahoo.com
@@ -322,7 +347,7 @@ export default function ContactForm() {
                 <div>
                   <h4 className="font-bold">Phone</h4>
                   <a
-                    href="tel:+1234567890"
+                    href="tel:+12403887358"
                     className="text-purple-400 hover:underline"
                   >
                     +1 (240) 388-7358
@@ -380,52 +405,6 @@ export default function ContactForm() {
                     />
                   </svg>
                 </a>
-                {/* <a
-                  href="#"
-                  className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
-                >
-                  <span className="sr-only">SoundCloud</span>
-                  <svg
-                    className="h-6 w-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                  </svg>
-                </a> */}
-                {/* <a
-                  href="#"
-                  className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
-                >
-                  <span className="sr-only">Mixcloud</span>
-                  <svg
-                    className="h-6 w-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M16.7 7.7v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.6 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.8v1.4l-1.4-.7-1.4.7V7.7l1.4-.7 1.4.7zm3.5 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zM21 9.4v1.4l-1.4-.7-1.4.7V9.4l1.4-.7L21 9.4zm-4.3 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-7.1-2.1v1.4l-1.4-.7-1.4.7V9.4l1.4-.7 1.4.7zm-3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm-3.5-2.1v1.4L3 9.8l-1.4.7V9.1l1.4-.7 1.4.7zm0 4.9v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm1.4 2.8v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5-2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7zm3.5 2.1v1.4l-1.4-.7-1.4.7v-1.4l1.4-.7 1.4.7z" />
-                  </svg>
-                </a> */}
-                {/* <a
-                  href="#"
-                  className="bg-gray-800 hover:bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center transition duration-300"
-                >
-                  <span className="sr-only">YouTube</span>
-                  <svg
-                    className="h-6 w-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </a> */}
               </div>
             </div>
           </div>
