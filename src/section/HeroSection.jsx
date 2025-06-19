@@ -38,10 +38,10 @@ export default function HeroSection() {
         className={`absolute inset-0 transition-opacity duration-1000 ${gradientActive ? 'opacity-100' : 'opacity-0'}`}
         style={{
           background: gradientActive 
-            ? 'linear-gradient(135deg, rgba(76, 29, 149, 0.8), rgba(49, 0, 98, 0.9), rgba(76, 29, 149, 0.8)'
-            : 'transparent',
+  ? 'linear-gradient(135deg, rgba(75, 0, 130, 0.9), rgba(147, 112, 219, 0.9), rgba(75, 0, 130, 0.9))'
+  : 'transparent',
           backgroundSize: gradientActive ? '400% 400%' : '100% 100%',
-          animation: gradientActive ? 'gradientFlow 15s ease infinite' : 'none'
+          animation: gradientActive ? 'gradientFlow 20s ease infinite' : 'none'
         }}
       ></div>
       
@@ -51,7 +51,7 @@ export default function HeroSection() {
           <span className="relative">
             {displayText}
             {isAnimating && (
-              <span className="absolute -right-3 top-0 h-full w-1 bg-purple-400 animate-pulse"></span>
+              <span className="absolute -right-3 top-0 h-full w-1 bg-purple-300 animate-pulse"></span>
             )}
           </span>
         </h1>
@@ -61,14 +61,14 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <button 
             onClick={() => navigate('#contact')} 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
           >
             Enquire Now
           </button>
           <span className="text-purple-400 hidden sm:block">|</span>
           <button 
             onClick={() => navigate('/book-now')} 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
           >
             Book Now
           </button>
@@ -77,15 +77,13 @@ export default function HeroSection() {
       
       <div className="absolute bottom-0 left-0 right-0 h-16 flex justify-center items-end space-x-1 z-10">
         {[...Array(20)].map((_, i) => (
-          <div 
-            key={i}
-            className="bg-purple-400 w-2 animate-pulse" 
-            style={{
-              height: `${Math.random() * 100}%`,
-              animationDuration: `${0.5 + Math.random() * 2}s`,
-              animationDelay: `${Math.random() * 0.5}s`
-            }}
-          ></div>
+          <div className="bg-gradient-to-t from-purple-500 to-transparent w-2 animate-pulse" 
+  style={{
+    height: `${Math.random() * 100}%`,
+    animationDuration: `${0.5 + Math.random() * 2}s`,
+    animationDelay: `${Math.random() * 0.5}s`
+  }}
+></div>
         ))}
       </div>
 
