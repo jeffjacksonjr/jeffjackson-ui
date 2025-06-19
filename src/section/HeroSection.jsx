@@ -38,8 +38,8 @@ export default function HeroSection() {
         className={`absolute inset-0 transition-opacity duration-1000 ${gradientActive ? 'opacity-100' : 'opacity-0'}`}
         style={{
           background: gradientActive 
-  ? 'linear-gradient(135deg, rgba(75, 0, 130, 0.9), rgba(147, 112, 219, 0.9), rgba(75, 0, 130, 0.9))'
-  : 'transparent',
+            ? 'linear-gradient(135deg, rgba(75, 0, 130, 0.9), rgba(147, 112, 219, 0.9), rgba(75, 0, 130, 0.9))'
+            : 'transparent',
           backgroundSize: gradientActive ? '400% 400%' : '100% 100%',
           animation: gradientActive ? 'gradientFlow 20s ease infinite' : 'none'
         }}
@@ -47,7 +47,14 @@ export default function HeroSection() {
       
       <div className="container mx-auto px-6 z-10 text-center">
         <h1 className="text-5xl md:text-7xl font-bold mb-6">
-          <span className="text-purple-400">DJ</span>{' '}
+          <span 
+            className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow"
+            style={{
+              animation: gradientActive ? 'gradientFlow 3s ease infinite' : 'none'
+            }}
+          >
+            DJ
+          </span>{' '}
           <span className="relative">
             {displayText}
             {isAnimating && (
@@ -77,13 +84,15 @@ export default function HeroSection() {
       
       <div className="absolute bottom-0 left-0 right-0 h-16 flex justify-center items-end space-x-1 z-10">
         {[...Array(20)].map((_, i) => (
-          <div className="bg-gradient-to-t from-purple-500 to-transparent w-2 animate-pulse" 
-  style={{
-    height: `${Math.random() * 100}%`,
-    animationDuration: `${0.5 + Math.random() * 2}s`,
-    animationDelay: `${Math.random() * 0.5}s`
-  }}
-></div>
+          <div 
+            key={i}
+            className="bg-gradient-to-t from-purple-500 to-transparent w-2 animate-pulse" 
+            style={{
+              height: `${Math.random() * 100}%`,
+              animationDuration: `${0.5 + Math.random() * 2}s`,
+              animationDelay: `${Math.random() * 0.5}s`
+            }}
+          ></div>
         ))}
       </div>
 
