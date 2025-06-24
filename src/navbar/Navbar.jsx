@@ -73,7 +73,7 @@ export default function Navbar() {
     <header className="bg-black text-white sticky top-0 z-50" ref={headerRef}>
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
-          <span className="text-purple-500">DJ</span> Jeff Jackson
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">DJ</span> Jeff Jackson
         </Link>
         
         {/* Desktop Navigation */}

@@ -159,7 +159,7 @@ function DateSelectionStep({ onSelectDate }) {
       <div className="flex justify-center mt-6">
         <button 
           onClick={() => setLoadDate(loadDate + 30)} 
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
+          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white px-8 py-3 rounded-full font-medium transition duration-300 transform hover:scale-105"
         >
           See more
         </button>
@@ -449,7 +449,7 @@ function ClientDetailsStep({ date, time, clientDetails, onChange, onSubmit, onBa
           <div className="mt-8">
             <button
               type="submit"
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium"
+              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-lg font-medium"
             >
               {clientDetails.eventType
                 ? `Pay $${currentPrice}`
@@ -531,7 +531,7 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
 
       <button
         onClick={onConfirm}
-        className="bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium w-full"
+        className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-lg font-medium w-full"
       >
         Pay ${currentPrice}
       </button>

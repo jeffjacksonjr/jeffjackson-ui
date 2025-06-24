@@ -307,7 +307,7 @@ export default function ContactForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 w-full md:w-auto"
+                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-8 py-3 rounded-full font-medium transition duration-300 w-full md:w-auto"
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
               </button>

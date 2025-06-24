@@ -825,9 +825,9 @@ export default function AdminDashboard() {
         state: "NY",
         message: "Looking for DJ for my 30th birthday party",
         status: "Pending",
-        depositReceived: "$0",
-        totalAmount: "$0",
-        remainingAmount: "$0",
+        depositReceived: "$1100",
+        totalAmount: "$1200",
+        remainingAmount: "$100",
       }
     ]);
   };
@@ -941,7 +941,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-8">
-        <span className="text-purple-400">Admin</span> Dashboard
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">Admin</span> Dashboard
       </h1>
 
       <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
@@ -953,7 +953,7 @@ export default function AdminDashboard() {
                 className={({ selected }) =>
                   `w-full py-2.5 text-sm font-medium rounded-md transition-all ${
                     selected
-                      ? "bg-purple-600 text-white"
+                      ? "bg-gradient-to-r from-purple-600 to-fuchsia-600"
                       : "text-gray-300 hover:bg-gray-800"
                   }`
                 }
@@ -1067,7 +1067,7 @@ export default function AdminDashboard() {
                                   ),
                                 })
                               }
-                              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
+                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
                             >Edit</button>
                           </div>
                         </td>
@@ -1203,7 +1203,7 @@ export default function AdminDashboard() {
                                   ),
                                 })
                               }
-                              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
+                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
                             >
                               Edit
                             </button>
@@ -1228,7 +1228,7 @@ export default function AdminDashboard() {
                                   ),
                                 })
                               }
-                              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
+                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
                             >
                               Edit
                             </button>
@@ -1348,7 +1348,7 @@ export default function AdminDashboard() {
                   </div>
                   <button
                     type="submit"
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
                   >
                     Block Schedule
                   </button>
@@ -1413,76 +1413,93 @@ export default function AdminDashboard() {
     
     
     {/* Search Form */}
-    <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6 border border-gray-500">
-      <h2 className="text-xl font-bold mb-6">View Agreements</h2>
-      <div className="flex space-x-4 mb-6">
-        <button
-          onClick={() => setSearchMethod('email')}
-          className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-        >
-          Search by Email & Unique ID
-        </button>
-        <button
-          onClick={() => setSearchMethod('id')}
-          className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-        >
-          Search by Unique ID
-        </button>
-      </div>
+    <div className="max-w-xl mx-auto relative p-[2px] rounded-lg bg-gradient-to-r from-purple-500 via-fuchsia-500 to-blue-500 animate-rotate-colors">
+  <style jsx global>{`
+    @keyframes rotate-colors {
+      0% {
+        background-position: 0% 50%;
+      }
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+    .animate-rotate-colors {
+      background-size: 200% 200%;
+      animation: rotate-colors 3s linear infinite;
+    }
+  `}</style>
+  
+  <div className="bg-gray-900 rounded-lg p-6">
+    <h2 className="text-xl font-bold mb-6">View Agreements</h2>
+    <div className="flex space-x-4 mb-6">
+      <button
+        onClick={() => setSearchMethod('email')}
+        className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+      >
+        Search by Email & Unique ID
+      </button>
+      <button
+        onClick={() => setSearchMethod('id')}
+        className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+      >
+        Search by Unique ID
+      </button>
+    </div>
 
-      <form onSubmit={handleSearch} className="space-y-6">
-        {searchMethod === 'id' ? (
+    <form onSubmit={handleSearch} className="space-y-6">
+      {searchMethod === 'id' ? (
+        <div>
           <div>
+            <label className="block text-sm font-medium mb-1">Unique ID *</label>
+            <input
+              type="text"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+              placeholder="BK123456"
+              required
+            />
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email Address *</label>
+              <input
+                type="email"
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                placeholder="john@example.com"
+                required
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Unique ID *</label>
               <input
                 type="text"
-                value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
+                value={searchBookingId}
+                onChange={(e) => setSearchBookingId(e.target.value)}
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
                 placeholder="BK123456"
                 required
               />
             </div>
           </div>
-        ) : (
-          <div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
-                  placeholder="john@example.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Unique ID *</label>
-                <input
-                  type="text"
-                  value={searchBookingId}
-                  onChange={(e) => setSearchBookingId(e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
-                  placeholder="BK123456"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        <center>
-          <button
-            type="submit"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium"
-          >
-            View Agreement
-          </button>
-        </center>
-      </form>
-    </div>
+        </div>
+      )}
+      <center>
+        <button
+          type="submit"
+          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
+        >
+          View Agreement
+        </button>
+      </center>
+    </form>
+  </div>
+</div>
 
     {/* Search Results */}
     {searchResults && (

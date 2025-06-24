@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
             <h3 className="text-2xl font-bold">
-              <span className="text-purple-400">DJ</span> Jeff Jackson
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">DJ</span> Jeff Jackson
             </h3>
             <p className="mt-2 text-gray-400">
               Creating unforgettable musical experiences

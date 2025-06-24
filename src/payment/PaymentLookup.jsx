@@ -104,13 +104,13 @@ export default function PaymentLookup() {
           <div className="flex space-x-4 mb-6">
             <button
               onClick={() => setSearchMethod('email')}
-              className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+              className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
             >
               Search by Email & Unique ID
             </button>
             <button
               onClick={() => setSearchMethod('id')}
-              className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+              className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
             >
               Search by Unique ID
             </button>
@@ -162,7 +162,7 @@ export default function PaymentLookup() {
             <center>
             <button
               type="submit"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium"
+              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
             >
               Search Booking
             </button>
