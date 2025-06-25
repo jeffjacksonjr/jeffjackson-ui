@@ -1431,18 +1431,19 @@ export default function AdminDashboard() {
   
   <div className="bg-gray-900 rounded-lg p-6">
     <h2 className="text-xl font-bold mb-6">View Agreements</h2>
+    <p className="text-gray-300 mb-4 text-lg">Search by:</p>
     <div className="flex space-x-4 mb-6">
       <button
         onClick={() => setSearchMethod('email')}
         className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
       >
-        Search by Email & Unique ID
+        Email & Unique ID
       </button>
       <button
         onClick={() => setSearchMethod('id')}
         className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
       >
-        Search by Unique ID
+        Unique ID
       </button>
     </div>
 

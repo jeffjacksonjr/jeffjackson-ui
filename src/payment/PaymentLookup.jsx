@@ -96,79 +96,97 @@ export default function PaymentLookup() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-8">
-        <a href='/payment'><span className="text-purple-400">Payment</span> Portal</a>
+        <a href='/payment'><span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">Payment</span> Portal</a>
       </h1>
 
       {!searchResults ? (
-        <div className="max-w-xl mx-auto bg-gray-900 rounded-lg p-6">
-          <div className="flex space-x-4 mb-6">
-            <button
-              onClick={() => setSearchMethod('email')}
-              className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
-            >
-              Search by Email & Unique ID
-            </button>
-            <button
-              onClick={() => setSearchMethod('id')}
-              className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
-            >
-              Search by Unique ID
-            </button>
-          </div>
+        <div className="max-w-xl mx-auto relative p-[2px] rounded-lg bg-gradient-to-r from-purple-500 via-fuchsia-500 to-blue-500 animate-rotate-colors">
+  <style jsx global>{`
+    @keyframes rotate-colors {
+      0% {
+        background-position: 0% 50%;
+      }
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+    .animate-rotate-colors {
+      background-size: 200% 200%;
+      animation: rotate-colors 3s linear infinite;
+    }
+  `}</style>
+  
+  <div className="bg-gray-900 rounded-lg p-6">
+    <p className="text-gray-300 mb-4 text-lg">Search by:</p>
+    <div className="flex space-x-4 mb-6">
+      <button
+        onClick={() => setSearchMethod('email')}
+        className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+      >
+        Email & Unique ID
+      </button>
+      <button
+        onClick={() => setSearchMethod('id')}
+        className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+      >
+        Unique ID
+      </button>
+    </div>
 
-          <form onSubmit={handleSearch} className="space-y-6">
-            {searchMethod === 'id' ? (
-              <div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Unique Event ID *</label>
-                  <input
-                    type="text"
-                    value={searchId}
-                    onChange={(e) => setSearchId(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-                    placeholder="BK123456/EQ123456"
-                    required
-                  />
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Email Address</label>
-                    <input
-                      type="email"
-                      value={searchEmail}
-                      onChange={(e) => setSearchEmail(e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-                      placeholder="john@example.com"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Booking ID</label>
-                    <input
-                      type="text"
-                      value={searchBookingId}
-                      onChange={(e) => setSearchBookingId(e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-                      placeholder="BK123456/EQ123456"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            <center>
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
-            >
-              Search Booking
-            </button>
-            </center>
-          </form>
+    <form onSubmit={handleSearch} className="space-y-6">
+      {searchMethod === 'id' ? (
+        <div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Unique Event ID *</label>
+            <input
+              type="text"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+              placeholder="BK123456/EQ123456"
+              required
+            />
+          </div>
         </div>
+      ) : (
+        <div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email Address</label>
+              <input
+                type="email"
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+                placeholder="john@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Booking ID</label>
+              <input
+                type="text"
+                value={searchBookingId}
+                onChange={(e) => setSearchBookingId(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+                placeholder="BK123456/EQ123456"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      <center>
+        <button
+          type="submit"
+          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
+        >
+          Search Booking
+        </button>
+      </center>
+    </form>
+  </div>
+</div>
       ) : (
         <div className="max-w-6xl mx-auto">
           <button
