@@ -1,0 +1,4 @@
+{
+    "healthCheck":"https://jeffjackson-test.onrender.com",
+    "loginEndpoint":"https://jeffjackson-test.onrender.com/api/login"
+}

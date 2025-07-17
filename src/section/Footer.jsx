@@ -1,4 +1,20 @@
+import { useSelector } from 'react-redux';
+
 export default function Footer() {
+  const { backendStatus } = useSelector((state) => state.systemStatus);
+  
+  const statusColor = {
+    checking: 'text-yellow-500',
+    connected: 'text-green-500',
+    disconnected: 'text-red-500',
+  };
+
+  const statusText = {
+    checking: 'Checking...',
+    connected: 'Connected',
+    disconnected: 'Disconnected',
+  };
+
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-6">
@@ -102,9 +118,19 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} DJ Jeff Jackson. All rights
               reserved.
             </p>
+
+            <div className="flex flex-col items-center md:items-end">
+            <div className="mb-4">
+              <p className="text-sm">
+                Server status: <span className={`${statusColor[backendStatus]} font-semibold`}>
+                  {statusText[backendStatus]}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
+    </div>
     </footer>
   );
 }

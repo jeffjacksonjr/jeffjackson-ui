@@ -1,6 +1,6 @@
 import config from './config.json';
-import prodConfig from './prod.json';
-import stageConfig from './stage.json';
+import prodConfig from './prodConfig.json';
+import testConfig from './testConfig.json';
 
 export const getConfig = () => {
     switch (config.environment) {
