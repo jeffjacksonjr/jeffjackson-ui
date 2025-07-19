@@ -10,6 +10,10 @@ import {
   DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import ProtectedRoute from "../redux/ProtectedRoute";
+import { toast } from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { getConfig } from '../config/activeConfig';
+import axios from 'axios';
 
 // Constants for colors and dimensions
 const COLORS = {
@@ -652,6 +656,7 @@ yPos += 12;
 }
 
 function AdminDashboardContent() {
+  const { token } = useSelector((state) => state.auth);
   const [searchMethod, setSearchMethod] = useState('email');
   const [searchEmail, setSearchEmail] = useState('');
   const [searchBookingId, setSearchBookingId] = useState('');
@@ -664,6 +669,16 @@ function AdminDashboardContent() {
     depositReceived: "",
     totalAmount: "",
   });
+  
+  const config = getConfig();
+  const api = axios.create({
+  baseURL: config.healthCheck,
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    withCredentials: true, // Important for CORS with credentials
+  }
+});
 
   // Add this function to handle amount updates
   const handleUpdateAmount = async (e) => {
@@ -741,11 +756,17 @@ function AdminDashboardContent() {
   }, []);
 
   const fetchBlockedDates = async () => {
-    setBlockedDates([
-      { id: 1, date: "2023-06-10", time: "2:00 PM", reason: "Personal" },
-      { id: 2, date: "2023-06-15", time: "4:00 PM", reason: "Maintenance" },
-    ]);
-  };
+  try {
+    const response = await api.get('/api/blockSchedule');
+    setBlockedDates(response.data);
+  } catch (error) {
+    console.error("Error fetching blocked dates:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to fetch blocked dates. Please try again."
+    );
+  }
+};
 
   const fetchBookings = async () => {
     setBookings([
@@ -834,11 +855,35 @@ function AdminDashboardContent() {
   };
 
   const handleBlockDate = async (e) => {
-    e.preventDefault();
-    console.log("Blocking date:", newBlock);
+  e.preventDefault();
+  
+  // Validate payload
+  if (!newBlock.date || !newBlock.time) {
+    toast.error("Date and Time are required");
+    return;
+  }
+
+  try {
+    const payload = {
+      date: newBlock.date,
+      time: newBlock.time,
+      reason: newBlock.reason || "",
+      type: "user" // Default type is user
+    };
+
+    await api.post('/api/blockSchedule', payload);
+    
+    toast.success("Date blocked successfully");
     setNewBlock({ date: "", time: "", reason: "" });
     await fetchBlockedDates();
-  };
+  } catch (error) {
+    console.error("Error blocking date:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to block date. Please try again."
+    );
+  }
+};
 
   const confirmDeleteBlockedDate = (id) => {
     setDeleteConfirmation({
@@ -848,13 +893,22 @@ function AdminDashboardContent() {
   };
 
   const deleteBlockedDate = async () => {
-    console.log("Deleting blocked date with id:", deleteConfirmation.id);
+  try {
+    await api.delete(`/api/blockSchedule/${deleteConfirmation.id}`);
+    toast.success("Blocked date deleted successfully");
     await fetchBlockedDates();
     setDeleteConfirmation({
       isOpen: false,
       id: null,
     });
-  };
+  } catch (error) {
+    console.error("Error deleting blocked date:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to delete blocked date. Please try again."
+    );
+  }
+};
 
   const handleEnquiryAction = (id, action) => {
   const enquiry = enquiries.find((e) => e.id === id);
@@ -1289,124 +1343,150 @@ function AdminDashboardContent() {
 
           {/* Block Dates Tab */}
           <Tab.Panel>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Block Schedule
-                </h2>
-                <form onSubmit={handleBlockDate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={newBlock.date}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, date: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      required
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Time *
-                    </label>
-                    <select
-                      value={newBlock.time}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, time: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      required
-                    >
-                      <option value="">Select time</option>
-                      <option value="08:00 AM">08:00 AM</option>
-                      <option value="10:00 AM">10:00 AM</option>
-                      <option value="12:00 PM">12:00 PM</option>
-                      <option value="2:00 PM">2:00 PM</option>
-                      <option value="4:00 PM">4:00 PM</option>
-                      <option value="6:00 PM">6:00 PM</option>
-                      <option value="8:00 PM">8:00 PM</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Reason
-                    </label>
-                    <input
-                      type="text"
-                      value={newBlock.reason}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, reason: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      placeholder="Optional reason for blocking"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
-                  >
-                    Block Schedule
-                  </button>
-                </form>
-              </div>
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="bg-gray-900 rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
+        Block Schedule
+      </h2>
+      <form onSubmit={handleBlockDate} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Date *
+          </label>
+          <input
+            type="date"
+            value={newBlock.date}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, date: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            required
+            min={new Date().toISOString().split("T")[0]}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Time *
+          </label>
+          <select
+            value={newBlock.time}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, time: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            required
+          >
+            <option value="">Select time</option>
+            <option value="08:00 AM">08:00 AM</option>
+            <option value="09:00 AM">09:00 AM</option>
+            <option value="10:00 AM">10:00 AM</option>
+            <option value="11:00 AM">11:00 AM</option>
+            <option value="12:00 PM">12:00 PM</option>
+            <option value="01:00 PM">01:00 PM</option>
+            <option value="02:00 PM">02:00 PM</option>
+            <option value="03:00 PM">03:00 PM</option>
+            <option value="04:00 PM">04:00 PM</option>
+            <option value="05:00 PM">05:00 PM</option>
+            <option value="06:00 PM">06:00 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
+            <option value="08:00 PM">08:00 PM</option>
+            <option value="09:00 PM">09:00 PM</option>
+            <option value="10:00 PM">10:00 PM</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Reason
+          </label>
+          <input
+            type="text"
+            value={newBlock.reason}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, reason: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            placeholder="Optional reason for blocking"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
+        >
+          Block Schedule
+        </button>
+      </form>
+    </div>
 
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Blocked Schedule
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead>
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Date
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Time
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Reason
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-700">
-                      {blockedDates.map((block) => (
-                        <tr key={block.id}>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {block.date}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {block.time}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {block.reason || "-"}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <button
-                              onClick={() => confirmDeleteBlockedDate(block.id)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <XCircleIcon className="h-5 w-5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </Tab.Panel>
+    <div className="bg-gray-900 rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
+        Blocked Schedule
+      </h2>
+      {blockedDates.length === 0 ? (
+        <p className="text-gray-400 text-center py-4">No blocked dates found</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Time
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Reason
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {blockedDates.map((block) => (
+                <tr key={block.id}>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.date}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.time}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.reason || "-"}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      block.type === "SYSTEM" 
+                        ? "bg-blue-900 text-blue-300" 
+                        : "bg-purple-900 text-purple-300"
+                    }`}>
+                      {block.type.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.type === "user" && (
+                      <button
+                        onClick={() => confirmDeleteBlockedDate(block.id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <XCircleIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </div>
+</Tab.Panel>
           
           {/* Agreements Tab */}
 <Tab.Panel>
