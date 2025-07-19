@@ -753,6 +753,7 @@ function AdminDashboardContent() {
     fetchBlockedDates();
     fetchBookings();
     fetchEnquiries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchBlockedDates = async () => {
