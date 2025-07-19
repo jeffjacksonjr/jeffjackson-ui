@@ -1,19 +1,23 @@
+// src/redux/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import systemStatusReducer from './systemStatusSlice';
+import authReducer from './authSlice';
 
-const persistConfig = {
-  key: 'root',
+const authPersistConfig = {
+  key: 'auth',
   storage,
+  whitelist: ['token', 'user', 'expiresAt']
 };
 
-const persistedReducer = persistReducer(persistConfig, systemStatusReducer);
+const rootReducer = {
+  systemStatus: systemStatusReducer,
+  auth: persistReducer(authPersistConfig, authReducer)
+};
 
 export const store = configureStore({
-  reducer: {
-    systemStatus: persistedReducer,
-  },
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

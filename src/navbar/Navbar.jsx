@@ -1,12 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../redux/authSlice'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const headerRef = useRef(null);
+
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+    setMobileMenuOpen(false);
+  };
 
   const navLinks = [
     { name: 'Home', href: '#home' },
@@ -15,7 +26,9 @@ export default function Navbar() {
     { name: 'Gallery', href: '#gallery' },
     { name: 'Enquiry', href: '#contact' },
     { name: 'Payment', href: '/payment' },
-    { name: 'Login', href: '/login' },
+    isAuthenticated 
+      ? { name: 'Logout', onClick: handleLogout }
+      : { name: 'Login', href: '/login' },
   ];
 
   // Handle navigation with proper scroll behavior
@@ -79,15 +92,25 @@ export default function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-8">
           {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              to={link.href.startsWith('#') && location.pathname !== '/' ? `/${link.href}` : link.href}
-              onClick={(e) => handleNavigation(link.href, e)}
-              className="hover:text-purple-400 transition duration-300"
-            >
-              {link.name}
-            </Link>
-          ))}
+    link.onClick ? (
+      <button
+        key={link.name}
+        onClick={link.onClick}
+        className="hover:text-purple-400 transition duration-300"
+      >
+        {link.name}
+      </button>
+    ) : (
+      <Link 
+        key={link.name} 
+        to={link.href.startsWith('#') && location.pathname !== '/' ? `/${link.href}` : link.href}
+        onClick={(e) => handleNavigation(link.href, e)}
+        className="hover:text-purple-400 transition duration-300"
+      >
+        {link.name}
+      </Link>
+    )
+  ))}
         </div>
         
         {/* Mobile menu button */}
@@ -106,22 +129,33 @@ export default function Navbar() {
       </nav>
       
       {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-gray-900 px-6 py-4">
-          <div className="flex flex-col space-y-4">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.name} 
-                to={link.href.startsWith('#') && location.pathname !== '/' ? `/${link.href}` : link.href}
-                onClick={(e) => handleNavigation(link.href, e)}
-                className="text-white hover:text-purple-400 transition duration-300"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Mobile Navigation */}
+{mobileMenuOpen && (
+  <div className="md:hidden bg-gray-900 px-6 py-4">
+    <div className="flex flex-col space-y-4">
+      {navLinks.map((link) => (
+        link.onClick ? (
+          <button
+            key={link.name}
+            onClick={link.onClick}
+            className="text-white hover:text-purple-400 transition duration-300 text-left w-full"
+          >
+            {link.name}
+          </button>
+        ) : (
+          <Link 
+            key={link.name} 
+            to={link.href.startsWith('#') && location.pathname !== '/' ? `/${link.href}` : link.href}
+            onClick={(e) => handleNavigation(link.href, e)}
+            className="text-white hover:text-purple-400 transition duration-300"
+          >
+            {link.name}
+          </Link>
+        )
+      ))}
+    </div>
+  </div>
+)}
     </header>
   );
 }

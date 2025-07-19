@@ -16,6 +16,7 @@ import { store, persistor } from './redux/store';
 import { setChecking, setConnected, setDisconnected } from './redux/systemStatusSlice';
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
+import ProtectedRoute from './redux/ProtectedRoute';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -59,7 +60,14 @@ function AppContent() {
         <Route path= "/" element={<Home/>}/>
         <Route path="/book-now" element={<BookingWizard/>} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<AdminDashboard/>} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard/>
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/payment" element={<PaymentLookup/>} />
       </Routes>
       <Footer/>

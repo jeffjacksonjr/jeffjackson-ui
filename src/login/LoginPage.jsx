@@ -1,24 +1,82 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/login/LoginPage.js
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginSuccess, checkAuth } from '../redux/authSlice';
+import axios from 'axios';
+import { getConfig } from '../config/activeConfig';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  // Check auth status on component mount
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    
+
+    // Basic client-side validation
+    if (!email || !password) {
+      toast.error('Please enter both email and password', {
+        duration: 10000, // 10 seconds
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate('/dashboard');
+      const config = getConfig();
+      const response = await axios.post(config.loginEndpoint, { 
+        username: email,
+        password 
+      });
+
+      // Validate API response
+      if (response.data.status !== 'Success') {
+        throw new Error(response.data.message || 'Login failed');
+      }
+
+      // Parse the token to get expiration time
+      const token = response.data.token;
+      const tokenData = JSON.parse(atob(token.split('.')[1]));
+      const expiresAt = new Date(tokenData.exp * 1000).toISOString();
+
+      dispatch(loginSuccess({
+        token,
+        user: { email },
+        expiresAt
+      }));
+
+      toast.success('Login successful!', {
+        duration: 2000, // 2 seconds
+      });
+
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (err) {
-      setError('Invalid email or password');
+      const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+      toast.error(errorMessage, {
+        duration: 2000, // 2 seconds
+      });
     } finally {
       setIsLoading(false);
     }
@@ -47,14 +105,7 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold">
               <span className="text-purple-400">DJ</span> Login
             </h2>
-            {/* <p className="text-gray-400 mt-2">Access your dashboard</p> */}
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-900 text-red-200 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -68,7 +119,7 @@ export default function LoginPage() {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   value={email}

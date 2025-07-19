@@ -9,6 +9,7 @@ import {
   PaperAirplaneIcon,
   DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
+import ProtectedRoute from "../redux/ProtectedRoute";
 
 // Constants for colors and dimensions
 const COLORS = {
@@ -650,7 +651,7 @@ yPos += 12;
   );
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const [searchMethod, setSearchMethod] = useState('email');
   const [searchEmail, setSearchEmail] = useState('');
   const [searchBookingId, setSearchBookingId] = useState('');
@@ -1804,5 +1805,13 @@ export default function AdminDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <ProtectedRoute>
+      <AdminDashboardContent />
+    </ProtectedRoute>
   );
 }
