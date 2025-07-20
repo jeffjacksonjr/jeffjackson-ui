@@ -37,7 +37,7 @@ export default function LoginPage() {
     // Basic client-side validation
     if (!email || !password) {
       toast.error('Please enter both email and password', {
-        duration: 10000, // 10 seconds
+        duration: 2000, // 2 seconds
       });
       setIsLoading(false);
       return;

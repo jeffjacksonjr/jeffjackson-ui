@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { getConfig } from '../config/activeConfig';
 import axios from 'axios';
+import { PencilIcon } from "@heroicons/react/24/outline";
 
 // Constants for colors and dimensions
 const COLORS = {
@@ -663,12 +664,21 @@ function AdminDashboardContent() {
   const [searchId, setSearchId] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [editAmountModal, setEditAmountModal] = useState({
-    isOpen: false,
-    bookingId: null,
-    fieldToEdit: null, // 'deposit' or 'total'
-    depositReceived: "",
-    totalAmount: "",
-  });
+  isOpen: false,
+  bookingId: null,
+  fieldToEdit: null, // 'deposit', 'total', or 'status'
+  depositReceived: "",
+  totalAmount: "",
+  status: ""
+});
+  const [enquiryPagination, setEnquiryPagination] = useState({
+  currentPage: 0,
+  pageSize: 10,
+  totalItems: 0,
+  totalPages: 1,
+  hasNext: false,
+  hasPrevious: false
+});
   
   const config = getConfig();
   const api = axios.create({
@@ -682,43 +692,79 @@ function AdminDashboardContent() {
 
   // Add this function to handle amount updates
   const handleUpdateAmount = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  try {
+    // Prepare the payload based on what field is being edited
+    let payload = {
+      uniqueId: editAmountModal.bookingId,
+      type: "enquiry" // This is always "enquiry" for this use case
+    };
 
+    if (editAmountModal.fieldToEdit === "deposit") {
+      payload.depositReceived = editAmountModal.depositReceived;
+    } else if (editAmountModal.fieldToEdit === "total") {
+      payload.totalAmount = editAmountModal.totalAmount;
+    } else if (editAmountModal.fieldToEdit === "status") {
+      payload.status = editAmountModal.status;
+    }
+
+    // Make the PATCH request
+    const response = await api.patch(`${config.enquiryEndpoint}`, payload);
+
+    if (response.data.status === "Fail") {
+      toast.error(response.data.message || "Update failed");
+      return;
+    }
+
+    // Update the local state if the API call was successful
     setEnquiries(
       enquiries.map((enquiry) => {
-        if (enquiry.id === editAmountModal.bookingId) {
-          const newDeposit =
-            editAmountModal.fieldToEdit === "deposit"
-              ? `$${editAmountModal.depositReceived}`
-              : enquiry.depositReceived;
+        if (enquiry.uniqueId === editAmountModal.bookingId) {
+          const updatedEnquiry = { ...enquiry };
+          
+          if (editAmountModal.fieldToEdit === "deposit") {
+            updatedEnquiry.depositReceived = editAmountModal.depositReceived;
+          } else if (editAmountModal.fieldToEdit === "total") {
+            updatedEnquiry.totalAmount = editAmountModal.totalAmount;
+          } else if (editAmountModal.fieldToEdit === "status") {
+            updatedEnquiry.status = editAmountModal.status;
+          }
 
-          const newTotal =
-            editAmountModal.fieldToEdit === "total"
-              ? `$${editAmountModal.totalAmount}`
-              : enquiry.totalAmount;
+          // Recalculate remaining amount if deposit or total was updated
+          if (editAmountModal.fieldToEdit === "deposit" || 
+              editAmountModal.fieldToEdit === "total") {
+            updatedEnquiry.remainingAmount = 
+              parseInt(updatedEnquiry.totalAmount || 0) - 
+              parseInt(updatedEnquiry.depositReceived || 0);
+          }
 
-          return {
-            ...enquiry,
-            depositReceived: newDeposit,
-            totalAmount: newTotal,
-            remainingAmount: `$${
-              parseInt(newTotal.replace(/\D/g, "")) -
-              parseInt(newDeposit.replace(/\D/g, ""))
-            }`,
-          };
+          return updatedEnquiry;
         }
         return enquiry;
       })
     );
 
+    toast.success("Update successful");
+    
+    // Close the modal
     setEditAmountModal({
       isOpen: false,
       bookingId: null,
       fieldToEdit: null,
       totalAmount: "",
       depositReceived: "",
+      status: ""
     });
-  };
+
+  } catch (error) {
+    console.error("Error updating enquiry:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to update. Please try again."
+    );
+  }
+};
 
   const [selectedTab, setSelectedTab] = useState(0);
   const [blockedDates, setBlockedDates] = useState([]);
@@ -812,48 +858,28 @@ function AdminDashboardContent() {
     ]);
   };
 
-  const fetchEnquiries = async () => {
-    setEnquiries([
-      {
-        id: "EQ123456",
-        clientName: "Sarah Williams",
-        email: "sarah.w@example.com",
-        phone: "+1 555-789-0123",
-        eventType: "Anniversary",
-        type: "enquiry",
-        eventDate: "2023-07-12",
-        eventTime: "5:00 PM",
-        street: "321 Memory Blvd",
-        apt: "Penthouse",
-        city: "Manhattan",
-        state: "NY",
-        message: "25th anniversary celebration with dinner and dancing",
-        status: "Approved",
-        depositReceived: "$500",
-        totalAmount: "$1000",
-        remainingAmount: "$500",
-      },
-      {
-        id: "EQ789012",
-        clientName: "Alex Johnson",
-        email: "alex.j@example.com",
-        phone: "+1 555-456-7890",
-        eventType: "Birthday Party",
-        type: "enquiry",
-        eventDate: "2023-07-05",
-        eventTime: "7:00 PM",
-        street: "789 Celebration Lane",
-        apt: "",
-        city: "Queens",
-        state: "NY",
-        message: "Looking for DJ for my 30th birthday party",
-        status: "Pending",
-        depositReceived: "$1100",
-        totalAmount: "$1200",
-        remainingAmount: "$100",
-      }
-    ]);
-  };
+  const fetchEnquiries = async (page = 0) => {
+  try {
+    const response = await api.get(`${config.enquiryEndpoint}?page=${page}`);
+    const { content, meta } = response.data;
+    
+    setEnquiries(content);
+    setEnquiryPagination({
+      currentPage: meta.currentPage,
+      pageSize: meta.pageSize,
+      totalItems: meta.totalItems,
+      totalPages: meta.totalPages,
+      hasNext: meta.hasNext,
+      hasPrevious: meta.hasPrevious
+    });
+  } catch (error) {
+    console.error("Error fetching enquiries:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to fetch enquiries. Please try again."
+    );
+  }
+};
 
   const handleBlockDate = async (e) => {
   e.preventDefault();
@@ -912,12 +938,21 @@ function AdminDashboardContent() {
 };
 
   const handleEnquiryAction = (id, action) => {
-  const enquiry = enquiries.find((e) => e.id === id);
+  const enquiry = enquiries.find((e) => e.uniqueId === id); // Changed from e.id to e.uniqueId
 
   if (action === "approve") {
     setAgreementModal({
       isOpen: true,
-      booking: enquiry, // We're reusing the same modal, so we'll pass the enquiry as booking
+      booking: {
+        ...enquiry,
+        id: enquiry.uniqueId, // Ensure the booking has an id property
+        totalAmount: enquiry.totalAmount ? `$${enquiry.totalAmount}` : "$0",
+        depositReceived: enquiry.depositReceived ? `$${enquiry.depositReceived}` : "$0",
+        street: enquiry.address, // Map address to street for the agreement modal
+        city: "", // Add these if available in your data
+        state: "",
+        apt: ""
+      }
     });
   } else {
     setDenyDialog({
@@ -997,7 +1032,10 @@ function AdminDashboardContent() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <h1 className="text-3xl font-bold mb-8">
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">Admin</span> Dashboard
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-400 bg-[length:200%_200%] animate-gradient-flow">
+          Admin
+        </span>{" "}
+        Dashboard
       </h1>
 
       <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
@@ -1124,7 +1162,9 @@ function AdminDashboardContent() {
                                 })
                               }
                               className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
-                            >Edit</button>
+                            >
+                              Edit
+                            </button>
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -1169,471 +1209,623 @@ function AdminDashboardContent() {
           <Tab.Panel>
             <div className="bg-gray-900 rounded-lg p-6">
               <h2 className="text-xl font-bold mb-4">Pending Enquiries</h2>
+
+              {/* Pagination Controls - Top */}
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-sm text-gray-400">
+                  Showing page {enquiryPagination.currentPage + 1} of{" "}
+                  {enquiryPagination.totalPages}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() =>
+                      fetchEnquiries(enquiryPagination.currentPage - 1)
+                    }
+                    disabled={!enquiryPagination.hasPrevious}
+                    className={`px-3 py-1 rounded-lg ${
+                      enquiryPagination.hasPrevious
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() =>
+                      fetchEnquiries(enquiryPagination.currentPage + 1)
+                    }
+                    disabled={!enquiryPagination.hasNext}
+                    className={`px-3 py-1 rounded-lg ${
+                      enquiryPagination.hasNext
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-700">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Full Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Phone
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Event Type
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Event Date
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Address
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Message
-                      </th>
-                      {/* Renamed these columns */}
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Total Amount
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Ask for Deposit
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Remaining Amount
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {enquiries.map((enquiry) => (
-                      <tr key={enquiry.id}>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {enquiry.clientName}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {enquiry.email}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {enquiry.phone}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {enquiry.eventType}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {new Date(enquiry.eventDate).toLocaleDateString()} at{" "}
-                          {enquiry.eventTime}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {enquiry.street}
-                          {enquiry.apt ? `, ${enquiry.apt}` : ""},{" "}
-                          {enquiry.city}, {enquiry.state}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
-                          {enquiry.message || "-"}
-                        </td>
-                        {/* These columns now match the renamed headers */}
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
-                              {enquiry.totalAmount}
-                            </span>
-                            <button
-                              onClick={() =>
-                                setEditAmountModal({
-                                  isOpen: true,
-                                  bookingId: enquiry.id,
-                                  fieldToEdit: "total",
-                                  depositReceived:
-                                    enquiry.depositReceived.replace(/\D/g, ""),
-                                  totalAmount: enquiry.totalAmount.replace(
-                                    /\D/g,
-                                    ""
-                                  ),
-                                })
-                              }
-                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
-                              {enquiry.depositReceived}
-                            </span>
-                            <button
-                              onClick={() =>
-                                setEditAmountModal({
-                                  isOpen: true,
-                                  bookingId: enquiry.id,
-                                  fieldToEdit: "deposit",
-                                  depositReceived:
-                                    enquiry.depositReceived.replace(/\D/g, ""),
-                                  totalAmount: enquiry.totalAmount.replace(
-                                    /\D/g,
-                                    ""
-                                  ),
-                                })
-                              }
-                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              parseInt(
-                                enquiry.remainingAmount.replace(/\D/g, "")
-                              ) > 0
-                                ? "bg-yellow-900 text-yellow-300"
-                                : "bg-green-900 text-green-300"
+  <thead>
+    <tr>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Enquiry ID
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Full Name
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Email
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Phone
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Event Type
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Event Date
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Address
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Message
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Total Amount
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Ask for Deposit
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Remaining Amount
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Status
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Actions
+      </th>
+    </tr>
+  </thead>
+  <tbody className="divide-y divide-gray-700">
+    {enquiries.map((enquiry) => (
+      <tr key={enquiry.uniqueId}>
+        {/* Basic Info Columns */}
+        <td className="px-4 py-3 whitespace-nowrap">
+          {enquiry.uniqueId}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.clientName}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.email}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.phone}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.eventType}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.eventDate} at {enquiry.eventTime}
+        </td>
+        <td className="px-4 py-3 whitespace-normal">
+          {enquiry.address}
+        </td>
+        <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
+          {enquiry.message || "-"}
+        </td>
+
+        {/* Total Amount Column with Edit */}
+        <td className="px-4 py-3 whitespace-nowrap">
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+              ${enquiry.totalAmount}
+            </span>
+            <button
+              onClick={() =>
+                setEditAmountModal({
+                  isOpen: true,
+                  bookingId: enquiry.uniqueId,
+                  fieldToEdit: "total",
+                  depositReceived: enquiry.depositReceived,
+                  totalAmount: enquiry.totalAmount,
+                })
+              }
+              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+            >
+              Edit
+            </button>
+          </div>
+        </td>
+
+        {/* Deposit Column with Edit */}
+        <td className="px-4 py-3 whitespace-nowrap">
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+              ${enquiry.depositReceived}
+            </span>
+            <button
+              onClick={() =>
+                setEditAmountModal({
+                  isOpen: true,
+                  bookingId: enquiry.uniqueId,
+                  fieldToEdit: "deposit",
+                  depositReceived: enquiry.depositReceived,
+                  totalAmount: enquiry.totalAmount,
+                })
+              }
+              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+            >
+              Edit
+            </button>
+          </div>
+        </td>
+
+        {/* Remaining Amount (Read-only) */}
+        <td className="px-4 py-3 whitespace-nowrap">
+          <span
+            className={`px-2 py-1 text-xs rounded-full ${
+              enquiry.remainingAmount > 0
+                ? "bg-yellow-900 text-yellow-300"
+                : "bg-green-900 text-green-300"
+            }`}
+          >
+            ${enquiry.remainingAmount}
+          </span>
+        </td>
+
+        {/* Status Display */}
+        <td className="px-4 py-3 whitespace-nowrap">
+  <span
+    className={`px-2 py-1 text-xs rounded-full ${
+      enquiry.status === "FINALIZED"
+        ? "bg-green-900 text-green-300"
+        : enquiry.status === "ON_HOLD"
+        ? "bg-yellow-900 text-yellow-300"
+        : enquiry.status === "IN_PROGRESS"
+        ? "bg-blue-900 text-blue-300"
+        : "bg-gray-700 text-gray-300" // OPENED
+    }`}
+  >
+    {enquiry.status.replace("_", " ")}
+  </span>
+</td>
+
+        {/* Actions Column */}
+        <td className="px-4 py-3 whitespace-nowrap space-x-2">
+          <button
+            onClick={() =>
+              handleEnquiryAction(enquiry.uniqueId, "approve")
+            }
+            className="text-green-400 hover:text-green-300"
+            title="Approve"
+            disabled={enquiry.status === "APPROVED"}
+          >
+            <CheckCircleIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() =>
+              handleEnquiryAction(enquiry.uniqueId, "deny")
+            }
+            className="text-red-400 hover:text-red-300"
+            title="Deny"
+            disabled={enquiry.status === "REJECTED"}
+          >
+            <XCircleIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() =>
+              setEditAmountModal({
+                isOpen: true,
+                bookingId: enquiry.uniqueId,
+                fieldToEdit: "status",
+                status: enquiry.status,
+              })
+            }
+            className="text-purple-400 hover:text-purple-300"
+            title="Edit Status"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+              </div>
+
+              {/* Pagination Controls - Bottom */}
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-gray-400">
+                  Showing {enquiries.length} of {enquiryPagination.totalItems}{" "}
+                  enquiries
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() =>
+                      fetchEnquiries(enquiryPagination.currentPage - 1)
+                    }
+                    disabled={!enquiryPagination.hasPrevious}
+                    className={`px-3 py-1 rounded-lg ${
+                      enquiryPagination.hasPrevious
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <div className="flex space-x-1">
+                    {Array.from(
+                      { length: Math.min(5, enquiryPagination.totalPages) },
+                      (_, i) => {
+                        let pageNum;
+                        if (enquiryPagination.totalPages <= 5) {
+                          pageNum = i;
+                        } else if (enquiryPagination.currentPage <= 2) {
+                          pageNum = i;
+                        } else if (
+                          enquiryPagination.currentPage >=
+                          enquiryPagination.totalPages - 3
+                        ) {
+                          pageNum = enquiryPagination.totalPages - 5 + i;
+                        } else {
+                          pageNum = enquiryPagination.currentPage - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => fetchEnquiries(pageNum)}
+                            className={`px-3 py-1 rounded-lg ${
+                              enquiryPagination.currentPage === pageNum
+                                ? "bg-purple-800"
+                                : "bg-purple-600 hover:bg-purple-700"
                             }`}
                           >
-                            {enquiry.remainingAmount}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              enquiry.status === "Approved"
-                                ? "bg-green-900 text-green-300"
-                                : "bg-gray-700 text-gray-300"
-                            }`}
-                          >
-                            {enquiry.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap space-x-2">
-                          <button
-                            onClick={() =>
-                              handleEnquiryAction(enquiry.id, "approve")
-                            }
-                            className="text-green-400 hover:text-green-300"
-                            title="Approve"
-                          >
-                            <CheckCircleIcon className="h-5 w-5" />
+                            {pageNum + 1}
                           </button>
-                          <button
-                            onClick={() =>
-                              handleEnquiryAction(enquiry.id, "deny")
-                            }
-                            className="text-red-400 hover:text-red-300"
-                            title="Deny"
-                          >
-                            <XCircleIcon className="h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        );
+                      }
+                    )}
+                  </div>
+                  <button
+                    onClick={() =>
+                      fetchEnquiries(enquiryPagination.currentPage + 1)
+                    }
+                    disabled={!enquiryPagination.hasNext}
+                    className={`px-3 py-1 rounded-lg ${
+                      enquiryPagination.hasNext
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
           </Tab.Panel>
 
           {/* Block Dates Tab */}
           <Tab.Panel>
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <div className="bg-gray-900 rounded-lg p-6">
-      <h2 className="text-xl font-bold mb-4 flex items-center">
-        <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
-        Block Schedule
-      </h2>
-      <form onSubmit={handleBlockDate} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Date *
-          </label>
-          <input
-            type="date"
-            value={newBlock.date}
-            onChange={(e) =>
-              setNewBlock({ ...newBlock, date: e.target.value })
-            }
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-            required
-            min={new Date().toISOString().split("T")[0]}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Time *
-          </label>
-          <select
-            value={newBlock.time}
-            onChange={(e) =>
-              setNewBlock({ ...newBlock, time: e.target.value })
-            }
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-            required
-          >
-            <option value="">Select time</option>
-            <option value="08:00 AM">08:00 AM</option>
-            <option value="09:00 AM">09:00 AM</option>
-            <option value="10:00 AM">10:00 AM</option>
-            <option value="11:00 AM">11:00 AM</option>
-            <option value="12:00 PM">12:00 PM</option>
-            <option value="01:00 PM">01:00 PM</option>
-            <option value="02:00 PM">02:00 PM</option>
-            <option value="03:00 PM">03:00 PM</option>
-            <option value="04:00 PM">04:00 PM</option>
-            <option value="05:00 PM">05:00 PM</option>
-            <option value="06:00 PM">06:00 PM</option>
-            <option value="07:00 PM">07:00 PM</option>
-            <option value="08:00 PM">08:00 PM</option>
-            <option value="09:00 PM">09:00 PM</option>
-            <option value="10:00 PM">10:00 PM</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Reason
-          </label>
-          <input
-            type="text"
-            value={newBlock.reason}
-            onChange={(e) =>
-              setNewBlock({ ...newBlock, reason: e.target.value })
-            }
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-            placeholder="Optional reason for blocking"
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
-        >
-          Block Schedule
-        </button>
-      </form>
-    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gray-900 rounded-lg p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center">
+                  <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
+                  Block Schedule
+                </h2>
+                <form onSubmit={handleBlockDate} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={newBlock.date}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, date: e.target.value })
+                      }
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+                      required
+                      min={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Time *
+                    </label>
+                    <select
+                      value={newBlock.time}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, time: e.target.value })
+                      }
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+                      required
+                    >
+                      <option value="">Select time</option>
+                      <option value="08:00 AM">08:00 AM</option>
+                      <option value="09:00 AM">09:00 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="01:00 PM">01:00 PM</option>
+                      <option value="02:00 PM">02:00 PM</option>
+                      <option value="03:00 PM">03:00 PM</option>
+                      <option value="04:00 PM">04:00 PM</option>
+                      <option value="05:00 PM">05:00 PM</option>
+                      <option value="06:00 PM">06:00 PM</option>
+                      <option value="07:00 PM">07:00 PM</option>
+                      <option value="08:00 PM">08:00 PM</option>
+                      <option value="09:00 PM">09:00 PM</option>
+                      <option value="10:00 PM">10:00 PM</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Reason
+                    </label>
+                    <input
+                      type="text"
+                      value={newBlock.reason}
+                      onChange={(e) =>
+                        setNewBlock({ ...newBlock, reason: e.target.value })
+                      }
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+                      placeholder="Optional reason for blocking"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
+                  >
+                    Block Schedule
+                  </button>
+                </form>
+              </div>
 
-    <div className="bg-gray-900 rounded-lg p-6">
-      <h2 className="text-xl font-bold mb-4 flex items-center">
-        <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
-        Blocked Schedule
-      </h2>
-      {blockedDates.length === 0 ? (
-        <p className="text-gray-400 text-center py-4">No blocked dates found</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Time
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Reason
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {blockedDates.map((block) => (
-                <tr key={block.id}>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {block.date}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {block.time}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {block.reason || "-"}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      block.type === "SYSTEM" 
-                        ? "bg-blue-900 text-blue-300" 
-                        : "bg-purple-900 text-purple-300"
-                    }`}>
-                      {block.type.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {block.type === "user" && (
-                      <button
-                        onClick={() => confirmDeleteBlockedDate(block.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <XCircleIcon className="h-5 w-5" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  </div>
-</Tab.Panel>
-          
+              <div className="bg-gray-900 rounded-lg p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center">
+                  <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
+                  Blocked Schedule
+                </h2>
+                {blockedDates.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">
+                    No blocked dates found
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Time
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Reason
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-700">
+                        {blockedDates.map((block) => (
+                          <tr key={block.id}>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {block.date}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {block.time}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {block.reason || "-"}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  block.type === "SYSTEM"
+                                    ? "bg-blue-900 text-blue-300"
+                                    : "bg-purple-900 text-purple-300"
+                                }`}
+                              >
+                                {block.type.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {block.type === "user" && (
+                                <button
+                                  onClick={() =>
+                                    confirmDeleteBlockedDate(block.id)
+                                  }
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  <XCircleIcon className="h-5 w-5" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Tab.Panel>
+
           {/* Agreements Tab */}
-<Tab.Panel>
-  <div className="bg-gray-900 rounded-lg p-6">
-    
-    
-    {/* Search Form */}
-    <div className="max-w-xl mx-auto relative p-[2px] rounded-lg bg-gradient-to-r from-purple-500 via-fuchsia-500 to-blue-500 animate-rotate-colors">
-  <style jsx global>{`
-    @keyframes rotate-colors {
-      0% {
-        background-position: 0% 50%;
-      }
-      100% {
-        background-position: 100% 50%;
-      }
-    }
-    .animate-rotate-colors {
-      background-size: 200% 200%;
-      animation: rotate-colors 3s linear infinite;
-    }
-  `}</style>
-  
-  <div className="bg-gray-900 rounded-lg p-6">
-    <h2 className="text-xl font-bold mb-6">View Agreements</h2>
-    <p className="text-gray-300 mb-4 text-lg">Search by:</p>
-    <div className="flex space-x-4 mb-6">
-      <button
-        onClick={() => setSearchMethod('email')}
-        className={`px-4 py-2 rounded-lg ${searchMethod === 'email' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-      >
-        Email & Unique ID
-      </button>
-      <button
-        onClick={() => setSearchMethod('id')}
-        className={`px-4 py-2 rounded-lg ${searchMethod === 'id' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-      >
-        Unique ID
-      </button>
-    </div>
+          <Tab.Panel>
+            <div className="bg-gray-900 rounded-lg p-6">
+              {/* Search Form */}
+              <div className="max-w-xl mx-auto relative p-[2px] rounded-lg bg-gradient-to-r from-purple-500 via-fuchsia-500 to-blue-500 animate-rotate-colors">
+                <style jsx global>{`
+                  @keyframes rotate-colors {
+                    0% {
+                      background-position: 0% 50%;
+                    }
+                    100% {
+                      background-position: 100% 50%;
+                    }
+                  }
+                  .animate-rotate-colors {
+                    background-size: 200% 200%;
+                    animation: rotate-colors 3s linear infinite;
+                  }
+                `}</style>
 
-    <form onSubmit={handleSearch} className="space-y-6">
-      {searchMethod === 'id' ? (
-        <div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Unique ID *</label>
-            <input
-              type="text"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
-              placeholder="BK123456"
-              required
-            />
-          </div>
-        </div>
-      ) : (
-        <div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Email Address *</label>
-              <input
-                type="email"
-                value={searchEmail}
-                onChange={(e) => setSearchEmail(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
-                placeholder="john@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Unique ID *</label>
-              <input
-                type="text"
-                value={searchBookingId}
-                onChange={(e) => setSearchBookingId(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
-                placeholder="BK123456"
-                required
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      <center>
-        <button
-          type="submit"
-          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
-        >
-          View Agreement
-        </button>
-      </center>
-    </form>
-  </div>
-</div>
+                <div className="bg-gray-900 rounded-lg p-6">
+                  <h2 className="text-xl font-bold mb-6">View Agreements</h2>
+                  <p className="text-gray-300 mb-4 text-lg">Search by:</p>
+                  <div className="flex space-x-4 mb-6">
+                    <button
+                      onClick={() => setSearchMethod("email")}
+                      className={`px-4 py-2 rounded-lg ${
+                        searchMethod === "email"
+                          ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
+                          : "bg-gray-700 text-gray-300"
+                      }`}
+                    >
+                      Email & Unique ID
+                    </button>
+                    <button
+                      onClick={() => setSearchMethod("id")}
+                      className={`px-4 py-2 rounded-lg ${
+                        searchMethod === "id"
+                          ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
+                          : "bg-gray-700 text-gray-300"
+                      }`}
+                    >
+                      Unique ID
+                    </button>
+                  </div>
 
-    {/* Search Results */}
-    {searchResults && (
-      <div className="bg-gray-900 rounded-lg p-6">
-        <h3 className="mt-5 text-lg font-bold mb-4">Agreement Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <p className="text-sm text-gray-400">Booking ID</p>
-            <p className="font-medium">{searchResults.id}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Client Name</p>
-            <p className="font-medium">{searchResults.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Email</p>
-            <p className="font-medium">{searchResults.email}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Phone</p>
-            <p className="font-medium">{searchResults.phone}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Event Type</p>
-            <p className="font-medium">{searchResults.eventType}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Event Date</p>
-            <p className="font-medium">{searchResults.eventDate} at {searchResults.eventTime}</p>
-          </div>
-          <div className="md:col-span-2">
-            <p className="text-sm text-gray-400">Address</p>
-            <p className="font-medium">{searchResults.address}</p>
-          </div>
-        </div>
-        
-        <div className="flex justify-center">
-          <a
-            href={searchResults.pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
-          >
-            <DocumentTextIcon className="h-5 w-5 mr-2" />
-            View PDF Agreement
-          </a>
-        </div>
-      </div>
-    )}
-  </div>
-</Tab.Panel>
+                  <form onSubmit={handleSearch} className="space-y-6">
+                    {searchMethod === "id" ? (
+                      <div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Unique ID *
+                          </label>
+                          <input
+                            type="text"
+                            value={searchId}
+                            onChange={(e) => setSearchId(e.target.value)}
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                            placeholder="BK123456"
+                            required
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              value={searchEmail}
+                              onChange={(e) => setSearchEmail(e.target.value)}
+                              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                              placeholder="john@example.com"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              Unique ID *
+                            </label>
+                            <input
+                              type="text"
+                              value={searchBookingId}
+                              onChange={(e) =>
+                                setSearchBookingId(e.target.value)
+                              }
+                              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3"
+                              placeholder="BK123456"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <center>
+                      <button
+                        type="submit"
+                        className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-6 py-3 rounded-lg font-medium"
+                      >
+                        View Agreement
+                      </button>
+                    </center>
+                  </form>
+                </div>
+              </div>
+
+              {/* Search Results */}
+              {searchResults && (
+                <div className="bg-gray-900 rounded-lg p-6">
+                  <h3 className="mt-5 text-lg font-bold mb-4">
+                    Agreement Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <p className="text-sm text-gray-400">Booking ID</p>
+                      <p className="font-medium">{searchResults.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Client Name</p>
+                      <p className="font-medium">{searchResults.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Email</p>
+                      <p className="font-medium">{searchResults.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Phone</p>
+                      <p className="font-medium">{searchResults.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Event Type</p>
+                      <p className="font-medium">{searchResults.eventType}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Event Date</p>
+                      <p className="font-medium">
+                        {searchResults.eventDate} at {searchResults.eventTime}
+                      </p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-sm text-gray-400">Address</p>
+                      <p className="font-medium">{searchResults.address}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <a
+                      href={searchResults.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
+                    >
+                      <DocumentTextIcon className="h-5 w-5 mr-2" />
+                      View PDF Agreement
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
 
@@ -1789,102 +1981,134 @@ function AdminDashboardContent() {
 
       {/* Agreement Modal */}
       {agreementModal.isOpen && (
-  <AgreementModal
-    booking={agreementModal.booking}
-    onClose={() => setAgreementModal({ isOpen: false, booking: null })}
-    onSend={sendAgreement}
-  />
-)}
+        <AgreementModal
+          booking={agreementModal.booking}
+          onClose={() => setAgreementModal({ isOpen: false, booking: null })}
+          onSend={sendAgreement}
+        />
+      )}
 
       {/* Edit Amount Modal */}
       {editAmountModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">
-              Edit{" "}
-              {editAmountModal.fieldToEdit === "deposit"
-                ? "Ask for Deposit"
-                : "Total Amount"}
-            </h3>
-            <form onSubmit={handleUpdateAmount} className="space-y-4">
-              {editAmountModal.fieldToEdit === "deposit" ? (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Ask for Deposit ($)
-                  </label>
-                  <input
-                    type="number"
-                    value={editAmountModal.depositReceived}
-                    onChange={(e) =>
-                      setEditAmountModal({
-                        ...editAmountModal,
-                        depositReceived: e.target.value,
-                      })
-                    }
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                    required
-                  />
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Total Amount ($)
-                  </label>
-                  <input
-                    type="number"
-                    value={editAmountModal.totalAmount}
-                    onChange={(e) =>
-                      setEditAmountModal({
-                        ...editAmountModal,
-                        totalAmount: e.target.value,
-                      })
-                    }
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                    required
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Remaining Amount
-                </label>
-                <input
-                  type="text"
-                  value={`$${
-                    parseInt(editAmountModal.totalAmount || 0) -
-                    parseInt(editAmountModal.depositReceived || 0)
-                  }`}
-                  readOnly
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
-                />
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditAmountModal({
-                      isOpen: false,
-                      bookingId: null,
-                      fieldToEdit: null,
-                      totalAmount: "",
-                      depositReceived: "",
-                    })
-                  }
-                  className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
-                >
-                  Update
-                </button>
-              </div>
-            </form>
+  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+      <h3 className="text-lg font-bold mb-4">
+        {editAmountModal.fieldToEdit === "deposit" && "Edit Ask for Deposit"}
+        {editAmountModal.fieldToEdit === "total" && "Edit Total Amount"}
+        {editAmountModal.fieldToEdit === "status" && "Update Status"}
+      </h3>
+      <form onSubmit={handleUpdateAmount} className="space-y-4">
+        {editAmountModal.fieldToEdit === "deposit" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Ask for Deposit ($)
+            </label>
+            <input
+              type="number"
+              value={editAmountModal.depositReceived}
+              onChange={(e) =>
+                setEditAmountModal({
+                  ...editAmountModal,
+                  depositReceived: e.target.value,
+                })
+              }
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
           </div>
+        )}
+
+        {editAmountModal.fieldToEdit === "total" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Total Amount ($)
+            </label>
+            <input
+              type="number"
+              value={editAmountModal.totalAmount}
+              onChange={(e) =>
+                setEditAmountModal({
+                  ...editAmountModal,
+                  totalAmount: e.target.value,
+                })
+              }
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
+          </div>
+        )}
+
+        {editAmountModal.fieldToEdit === "status" && (
+  <div>
+    <label className="block text-sm font-medium mb-1">
+      Status
+    </label>
+    <select
+      value={editAmountModal.status}
+      onChange={(e) =>
+        setEditAmountModal({
+          ...editAmountModal,
+          status: e.target.value,
+        })
+      }
+      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+      required
+    >
+      <option value="">Select status</option>
+      <option value="OPENED">Opened</option>
+      <option value="IN_PROGRESS">In Progress</option>
+      <option value="ON_HOLD">On Hold</option>
+      <option value="FINALIZED">Finalized</option>
+    </select>
+  </div>
+)}
+
+        {(editAmountModal.fieldToEdit === "deposit" || 
+          editAmountModal.fieldToEdit === "total") && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Remaining Amount
+            </label>
+            <input
+              type="text"
+              value={`$${
+                parseInt(editAmountModal.totalAmount || 0) -
+                parseInt(editAmountModal.depositReceived || 0)
+              }`}
+              readOnly
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
+            />
+          </div>
+        )}
+
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() =>
+              setEditAmountModal({
+                isOpen: false,
+                bookingId: null,
+                fieldToEdit: null,
+                totalAmount: "",
+                depositReceived: "",
+                status: ""
+              })
+            }
+            className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Update
+          </button>
         </div>
-      )}
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
