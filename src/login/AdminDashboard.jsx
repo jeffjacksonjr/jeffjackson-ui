@@ -674,11 +674,11 @@ function AdminDashboardContent() {
   const api = axios.create({
   baseURL: config.healthCheck,
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-    withCredentials: true, // Important for CORS with credentials
+    'Authorization': `Bearer ${token}`
+},
+  withCredentials: true // Important for CORS with credentials
   }
-});
+);
 
   // Add this function to handle amount updates
   const handleUpdateAmount = async (e) => {
