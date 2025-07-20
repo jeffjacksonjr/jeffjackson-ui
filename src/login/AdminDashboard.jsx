@@ -168,6 +168,7 @@ function AgreementModal({ booking, onClose, onSend }) {
   const [eventEndTime, setEventEndTime] = useState("");
   const [pdfData, setPdfData] = useState(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [nonRefundableDeposit, setNonRefundableDeposit] = useState(true);
 
   // Calculate remaining balance safely
   const depositAmount =
@@ -365,14 +366,14 @@ yPos += 12;
       yPos += 40;
 
       // Financial Details Section
-      addSectionBackground(yPos, 45, COLORS.GRAY_800);
+      addSectionBackground(yPos, 25, COLORS.GRAY_800);
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 255, 255);
       doc.text("FINANCIAL DETAILS", margin, yPos + 5);
 
-      yPos += 20;
+      yPos += 15;
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
 
@@ -431,6 +432,21 @@ yPos += 12;
       });
 
       yPos += 15;
+
+      if (nonRefundableDeposit) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 0, 0); // Red color for emphasis
+      yPos += addWrappedText(
+        doc,
+        "NOTE: Deposits are NON-REFUNDABLE",
+        margin + 5,
+        yPos,
+        pageWidth - 2 * margin - 10,
+        10
+      );
+      doc.setTextColor(0, 0, 0); // Reset to black
+    }
 
       // Signatures Section
       checkPageBreak(80);
@@ -557,11 +573,10 @@ yPos += 12;
                   </label>
                   <input
                     type="text" // Using text type to better handle empty state
-                    value={agreementAmount}
+                    value={booking.totalAmount || agreementAmount}
                     onChange={handleAmountChange}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                    placeholder="Enter amount"
-                    required
+                    className="w-full text-purple-400 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
+                    readOnly
                   />
                 </div>
 
@@ -604,6 +619,21 @@ yPos += 12;
                   placeholder="Enter any special instructions or requests for the agreement..."
                 />
               </div>
+
+              {/* Non-refundable Deposit Checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="nonRefundableDeposit"
+                  checked={nonRefundableDeposit}
+                  onChange={(e) => setNonRefundableDeposit(e.target.checked)}
+                  className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                />
+                <label htmlFor="nonRefundableDeposit" className="ml-2 block text-sm text-gray-300">
+                  Deposits are non-refundable
+                </label>
+              </div>
+
 
               {/* Event End Time Field */}
               <div>
