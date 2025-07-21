@@ -1004,23 +1004,6 @@ function AdminDashboardContent() {
   });
 };
 
-  const sendDenial = async (e) => {
-    e.preventDefault();
-    console.log("Sending denial for enquiry:", denyDialog.enquiry.id, {
-      date: denyDialog.date,
-      time: denyDialog.time,
-      message: denyDialog.message,
-    });
-    await fetchEnquiries();
-    setDenyDialog({
-      isOpen: false,
-      enquiry: null,
-      date: "",
-      time: "",
-      message: "",
-    });
-  };
-
   const sendAgreement = async (payload) => {
     console.log("Sending agreement with payload:", payload);
     // Here you would typically call an API to generate and send the PDF
@@ -1916,98 +1899,125 @@ function AdminDashboardContent() {
       )}
 
       {/* Denial Meeting Schedule Dialog */}
-      {denyDialog.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">
-              Schedule Meeting for Denial
-            </h3>
+{/* Denial Meeting Schedule Dialog */}
+{denyDialog.isOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+      <h3 className="text-lg font-bold mb-4">
+        Schedule Discussion for Enquiry
+      </h3>
 
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg">
-              <h4 className="font-medium mb-2">Client Details:</h4>
-              <p>Name: {denyDialog.enquiry.clientName}</p>
-              <p>Email: {denyDialog.enquiry.email}</p>
-              <p>Phone: {denyDialog.enquiry.phone}</p>
-            </div>
+      <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+        <h4 className="font-medium mb-2">Client Details:</h4>
+        <p>Name: {denyDialog.enquiry.clientName}</p>
+        <p>Email: {denyDialog.enquiry.email}</p>
+        <p>Phone: {denyDialog.enquiry.phone}</p>
+      </div>
 
-            <form onSubmit={sendDenial} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Date *</label>
-                <input
-                  type="date"
-                  value={denyDialog.date}
-                  onChange={(e) =>
-                    setDenyDialog({ ...denyDialog, date: e.target.value })
-                  }
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                  required
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
+      <form onSubmit={async (e) => {
+        e.preventDefault();
+        try {
+          const payload = {
+            enquiryId: denyDialog.enquiry.uniqueId,
+            clientEmail: denyDialog.enquiry.email,
+            proposedDate: denyDialog.date,
+            proposedTime: denyDialog.time,
+            message: denyDialog.message
+          };
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Time *</label>
-                <select
-                  value={denyDialog.time}
-                  onChange={(e) =>
-                    setDenyDialog({ ...denyDialog, time: e.target.value })
-                  }
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                  required
-                >
-                  <option value="">Select time</option>
-                  <option value="08:00 AM">08:00 AM</option>
-                  <option value="10:00 AM">10:00 AM</option>
-                  <option value="12:00 PM">12:00 PM</option>
-                  <option value="02:00 PM">02:00 PM</option>
-                  <option value="04:00 PM">04:00 PM</option>
-                  <option value="06:00 PM">06:00 PM</option>
-                </select>
-              </div>
+          // The token will be automatically included via axios interceptors
+          const response = await api.post(config.sendDenialEmailEndpoint, payload);
+          
+          if (response.data.status === "Success") {
+            toast.success(response.data.message || "Discussion request sent successfully");
+            await fetchEnquiries(); // Refresh the enquiries list
+          } else {
+            toast.error(response.data.message || "Failed to send discussion request");
+          }
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Message *
-                </label>
-                <textarea
-                  value={denyDialog.message}
-                  onChange={(e) =>
-                    setDenyDialog({ ...denyDialog, message: e.target.value })
-                  }
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                  required
-                  placeholder="Enter your message to the client"
-                  rows="3"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setDenyDialog({
-                      isOpen: false,
-                      enquiry: null,
-                      date: "",
-                      time: "",
-                      message: "",
-                    })
-                  }
-                  className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
-                >
-                  Send
-                </button>
-              </div>
-            </form>
-          </div>
+          setDenyDialog({
+            isOpen: false,
+            enquiry: null,
+            date: "",
+            time: "",
+            message: "",
+          });
+        } catch (error) {
+          console.error("Error sending discussion request:", error);
+          toast.error(error.response?.data?.message || "Failed to send discussion request");
+        }
+      }} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Proposed Date *</label>
+          <input
+            type="date"
+            value={denyDialog.date}
+            onChange={(e) =>
+              setDenyDialog({ ...denyDialog, date: e.target.value })
+            }
+            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+            required
+            min={new Date().toISOString().split("T")[0]}
+          />
         </div>
-      )}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Proposed Time *</label>
+          <input
+            type="text"
+            value={denyDialog.time}
+            onChange={(e) =>
+              setDenyDialog({ ...denyDialog, time: e.target.value })
+            }
+            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+            required
+            placeholder="Example: 10:00 AM"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Message *
+          </label>
+          <textarea
+            value={denyDialog.message}
+            onChange={(e) =>
+              setDenyDialog({ ...denyDialog, message: e.target.value })
+            }
+            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+            required
+            placeholder="Example: We'd like to discuss your requirements in more detail as we believe there might be better solutions available for your needs."
+            rows="3"
+          />
+        </div>
+
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() =>
+              setDenyDialog({
+                isOpen: false,
+                enquiry: null,
+                date: "",
+                time: "",
+                message: "",
+              })
+            }
+            className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Send Discussion Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 
       {/* Agreement Modal */}
       {agreementModal.isOpen && (
