@@ -3,5 +3,6 @@
     "loginEndpoint":"https://jeffjackson-prod.onrender.com/api/login",
     "blockScheduleEndpoint":"https://jeffjackson-prod.onrender.com/api/blockSchedule",
     "enquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries",
-    "sendDenialEmailEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries/sendDenialEmail"
+    "sendDenialEmailEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries/sendDenialEmail",
+    "viewAgreementEndpoint":"https://jeffjackson-prod.onrender.com/api/viewAgreement"
 }

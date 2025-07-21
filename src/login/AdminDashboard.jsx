@@ -1013,34 +1013,54 @@ function AdminDashboardContent() {
     await fetchBookings();
   };
 
-  const handleSearch = (e) => {
+const handleSearch = async (e) => {
   e.preventDefault();
   
-  // Mock data - in a real app you would fetch this from your API
-  const mockAgreement = {
-    id: 'BK123456',
-    name: 'Adam Rose',
-    email: 'adam@example.com',
-    phone: '+1 555-789-0456',
-    address: '456 Melody Lane, Apt 4B, Brooklyn, NY 11201',
-    eventType: 'Corporate Party',
-    type: "booking",
-    eventDate: '2023-07-18',
-    eventTime: '5:00 PM',
-    pdfUrl: "https://conasems-ava-prod.s3.sa-east-1.amazonaws.com/aulas/ava/dummy-1641923583.pdf" // Replace with your mock PDF URL
-  };
+  try {
+    let response;
+    let requestData;
+    
+    if (searchMethod === "id") {
+      // Search by ID only
+      if (!searchId) {
+        toast.error("Please enter a Unique ID");
+        return;
+      }
+      
+      requestData = { uniqueId: searchId };
+    } else {
+      // Search by email and booking ID
+      if (!searchEmail || !searchBookingId) {
+        toast.error("Please enter both Email and Unique ID");
+        return;
+      }
+      
+      requestData = {
+        email: searchEmail,
+        uniqueId: searchBookingId
+      };
+    }
 
-  // Simple validation - in a real app you would check against your database
-  if ((searchMethod === 'email' && 
-       searchEmail === 'adam@example.com' && 
-       searchBookingId === 'BK123456') ||
-      (searchMethod === 'id' && searchId === 'BK123456')) {
-    setSearchResults(mockAgreement);
-  } else {
-    alert('No agreement found with those details');
+    // Make POST request with the data in the body
+    response = await api.post(config.viewAgreementEndpoint, requestData);
+
+    if (response.data) {
+      setSearchResults(response.data);
+      toast.success("Agreement details retrieved successfully");
+    } else {
+      toast.error("No agreement found with those details");
+      setSearchResults(null);
+    }
+  } catch (error) {
+    console.error("Error searching for agreement:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to retrieve agreement. Please try again."
+    );
     setSearchResults(null);
   }
 };
+
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -1787,56 +1807,64 @@ function AdminDashboardContent() {
 
               {/* Search Results */}
               {searchResults && (
-                <div className="bg-gray-900 rounded-lg p-6">
-                  <h3 className="mt-5 text-lg font-bold mb-4">
-                    Agreement Details
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <p className="text-sm text-gray-400">Booking ID</p>
-                      <p className="font-medium">{searchResults.id}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Client Name</p>
-                      <p className="font-medium">{searchResults.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Email</p>
-                      <p className="font-medium">{searchResults.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Phone</p>
-                      <p className="font-medium">{searchResults.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Event Type</p>
-                      <p className="font-medium">{searchResults.eventType}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Event Date</p>
-                      <p className="font-medium">
-                        {searchResults.eventDate} at {searchResults.eventTime}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-sm text-gray-400">Address</p>
-                      <p className="font-medium">{searchResults.address}</p>
-                    </div>
-                  </div>
+  <div className="bg-gray-900 rounded-lg p-6">
+    <h3 className="mt-5 text-lg font-bold mb-4">
+      Agreement Details
+    </h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div>
+        <p className="text-sm text-gray-400">Reference ID</p>
+        <p className="font-medium">{searchResults.uniqueId}</p>
+      </div>
+      <div>
+        <p className="text-sm text-gray-400">Client Name</p>
+        <p className="font-medium">{searchResults.clientName}</p>
+      </div>
+      <div>
+        <p className="text-sm text-gray-400">Email</p>
+        <p className="font-medium">{searchResults.clientEmail}</p>
+      </div>
+      <div>
+        <p className="text-sm text-gray-400">Phone</p>
+        <p className="font-medium">{searchResults.phone}</p>
+      </div>
+      <div>
+        <p className="text-sm text-gray-400">Event Type</p>
+        <p className="font-medium">{searchResults.eventType}</p>
+      </div>
+      <div>
+        <p className="text-sm text-gray-400">Event Date & Time</p>
+        <p className="font-medium">{searchResults.eventDateTime}</p>
+      </div>
+      <div className="md:col-span-2">
+        <p className="text-sm text-gray-400">Address</p>
+        <p className="font-medium">{searchResults.address}</p>
+      </div>
+    </div>
 
-                  <div className="flex justify-center">
-                    <a
-                      href={searchResults.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
-                    >
-                      <DocumentTextIcon className="h-5 w-5 mr-2" />
-                      View PDF Agreement
-                    </a>
-                  </div>
-                </div>
-              )}
+    <div className="flex justify-center">
+      {searchResults.agreementUrl ? (
+        <a
+          href={searchResults.agreementUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
+        >
+          <DocumentTextIcon className="h-5 w-5 mr-2" />
+          View PDF Agreement
+        </a>
+      ) : (
+        <div className="bg-gray-800 p-4 rounded-lg text-center">
+          <DocumentTextIcon className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+          <p className="text-gray-300">No agreement document</p>
+          <p className="text-sm text-gray-400 mt-1">
+            The agreement will reflect once it is generated and sent to the client.
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
             </div>
           </Tab.Panel>
         </Tab.Panels>
