@@ -1,34 +1,40 @@
-import { useState } from 'react';
-import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useState } from "react";
+import {
+  EnvelopeIcon,
+  PhoneIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
+import { getConfig } from "../config/activeConfig";
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    eventType: '',
-    otherEventType: '',
-    eventDate: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    eventType: "",
+    otherEventType: "",
+    eventDate: "",
+    eventTime: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    message: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user types
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -38,55 +44,129 @@ export default function ContactForm() {
 
   const validate = () => {
     const newErrors = {};
-    
-    if (!formData.name) newErrors.name = 'Name is required';
+
+    if (!formData.name) newErrors.name = "Name is required";
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    if (!formData.eventType) newErrors.eventType = 'Event type is required';
-    if (formData.eventType === 'Other' && !formData.otherEventType) {
-      newErrors.otherEventType = 'Please specify your event type';
+    if (!formData.eventType) newErrors.eventType = "Event type is required";
+    if (formData.eventType === "Other" && !formData.otherEventType) {
+      newErrors.otherEventType = "Please specify your event type";
     }
-    if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
-    if (!formData.address) newErrors.address = 'Address is required';
-    if (!formData.city) newErrors.city = 'City is required';
-    if (!formData.postalCode) newErrors.postalCode = 'Postal code is required';
-    if (!formData.message) newErrors.message = 'Message is required';
-    
+    if (!formData.eventDate) newErrors.eventDate = "Event date is required";
+    if (!formData.eventTime) {
+      newErrors.eventTime = "Event time is required";
+    } else if (
+      !/^(1[0-2]|0?[1-9]):[0-5][0-9] (AM|PM)$/i.test(formData.eventTime)
+    ) {
+      newErrors.eventTime = "Please use h:mm AM/PM format (e.g., 5:00 PM)";
+    }
+    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.postalCode) newErrors.postalCode = "Postal code is required";
+    if (!formData.message) newErrors.message = "Message is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validate()) {
       setIsSubmitting(true);
-      
-      // Simulate form submission
-      setTimeout(() => {
-        console.log('Form submitted:', formData);
-        setIsSubmitting(false);
-        setSubmitSuccess(true);
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          eventType: '',
-          otherEventType: '',
-          eventDate: '',
-          address: '',
-          city: '',
-          postalCode: '',
-          message: ''
+      const loadingToast = toast.loading("Sending your enquiry...");
+
+      try {
+        const config = getConfig();
+        const payload = {
+          clientName: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          eventType:
+            formData.eventType === "Other"
+              ? formData.otherEventType
+              : formData.eventType,
+          type: "enquiry",
+          eventDate: formatDate(formData.eventDate), // MM-DD-YYYY format
+          eventTime: formatTime(formData.eventTime),
+          address: `${formData.address}, ${formData.city}, ${formData.postalCode}`,
+          message: formData.message,
+          depositReceived: "0",
+          totalAmount: "0",
+          remainingAmount: "0",
+          agreementUrl: null,
+        };
+
+        const response = await fetch(config.submitEnquiryEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         });
-        
-        // Hide success message after 5 seconds
-        setTimeout(() => setSubmitSuccess(false), 5000);
-      }, 1500);
+
+        if (!response.ok) {
+          throw new Error("Failed to submit enquiry");
+        }
+
+        toast.success("Thank you! Your enquiry has been sent successfully.", {
+          id: loadingToast,
+        });
+
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          eventType: "",
+          otherEventType: "",
+          eventDate: "",
+          address: "",
+          city: "",
+          postalCode: "",
+          message: "",
+        });
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toast.error("Failed to send enquiry. Please try again later.", {
+          id: loadingToast,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+
+    // Convert simple formats to consistent format (e.g., "5 pm" -> "5:00 PM")
+    const time = timeString.trim().toUpperCase();
+
+    // Handle simple formats
+    if (/^\d{1,2}\s?(AM|PM)$/i.test(time)) {
+      return time.replace(/(\d+)\s?(AM|PM)/i, "$1:00 $2");
+    }
+
+    // Handle formats with minutes but no colon
+    if (/^\d{1,2}\s?\d{2}\s?(AM|PM)$/i.test(time)) {
+      return time.replace(/(\d+)\s?(\d{2})\s?(AM|PM)/i, "$1:$2 $3");
+    }
+
+    // Return as-is if already in correct format
+    return time;
   };
 
   return (
@@ -142,72 +222,76 @@ export default function ContactForm() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div>
-    <label htmlFor="phone" className="block mb-2">
-      Phone Number
-    </label>
-    <input
-      type="tel"
-      id="phone"
-      name="phone"
-      value={formData.phone}
-      onChange={handleChange}
-      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-    />
-  </div>
+                <div>
+                  <label htmlFor="phone" className="block mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
 
-  <div>
-    <label htmlFor="eventType" className="block mb-2">
-      Event Type *
-    </label>
-    <select
-      id="eventType"
-      name="eventType"
-      value={formData.eventType}
-      onChange={handleChange}
-      className={`w-full bg-gray-800 border ${
-        errors.eventType ? "border-red-500" : "border-gray-700"
-      } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
-    >
-      <option value="">Select an option</option>
-      <option value="Wedding">Wedding</option>
-      <option value="Corporate">Corporate Event</option>
-      <option value="Club">Club Night</option>
-      <option value="Festival">Festival</option>
-      <option value="Private">Private Party</option>
-      <option value="Other">Other</option>
-    </select>
-    {errors.eventType && (
-      <p className="text-red-500 text-sm mt-1">
-        {errors.eventType}
-      </p>
-    )}
-  </div>
+                <div>
+                  <label htmlFor="eventType" className="block mb-2">
+                    Event Type *
+                  </label>
+                  <select
+                    id="eventType"
+                    name="eventType"
+                    value={formData.eventType}
+                    onChange={handleChange}
+                    className={`w-full bg-gray-800 border ${
+                      errors.eventType ? "border-red-500" : "border-gray-700"
+                    } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  >
+                    <option value="">Select an option</option>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Corporate">Corporate Event</option>
+                    <option value="Club">Club Night</option>
+                    <option value="Festival">Festival</option>
+                    <option value="Private">Private Party</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  {errors.eventType && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.eventType}
+                    </p>
+                  )}
+                </div>
 
-  {/* Move the Other field outside the grid and make it full width */}
-  {formData.eventType === 'Other' && (
-    <div className="col-span-2"> {/* This spans both columns */}
-      <label htmlFor="otherEventType" className="block mb-2">
-        Please specify your event type *
-      </label>
-      <input
-        type="text"
-        id="otherEventType"
-        name="otherEventType"
-        value={formData.otherEventType}
-        onChange={handleChange}
-        className={`w-full bg-gray-800 border ${
-          errors.otherEventType ? "border-red-500" : "border-gray-700"
-        } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
-      />
-      {errors.otherEventType && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.otherEventType}
-        </p>
-      )}
-    </div>
-  )}
-</div>
+                {/* Move the Other field outside the grid and make it full width */}
+                {formData.eventType === "Other" && (
+                  <div className="col-span-2">
+                    {" "}
+                    {/* This spans both columns */}
+                    <label htmlFor="otherEventType" className="block mb-2">
+                      Please specify your event type *
+                    </label>
+                    <input
+                      type="text"
+                      id="otherEventType"
+                      name="otherEventType"
+                      value={formData.otherEventType}
+                      onChange={handleChange}
+                      className={`w-full bg-gray-800 border ${
+                        errors.otherEventType
+                          ? "border-red-500"
+                          : "border-gray-700"
+                      } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    />
+                    {errors.otherEventType && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.otherEventType}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label htmlFor="eventDate" className="block mb-2">
@@ -235,6 +319,31 @@ export default function ContactForm() {
               </div>
 
               <div>
+                <label htmlFor="eventTime" className="block mb-2">
+                  Event Time *
+                </label>
+                <input
+                  type="text"
+                  id="eventTime"
+                  name="eventTime"
+                  value={formData.eventTime}
+                  onChange={handleChange}
+                  placeholder="e.g., 5:00 PM"
+                  className={`w-full bg-gray-800 border ${
+                    errors.eventTime ? "border-red-500" : "border-gray-700"
+                  } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                />
+                <p className="text-sm text-gray-400 mt-1">
+                  Format: HH:MM AM/PM (e.g., 5:00 PM or 11:30 AM)
+                </p>
+                {errors.eventTime && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.eventTime}
+                  </p>
+                )}
+              </div>
+
+              <div>
                 <label htmlFor="address" className="block mb-2">
                   Complete Address *
                 </label>
@@ -256,29 +365,43 @@ export default function ContactForm() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="city" className="block mb-2">City *</label>
+                  <label htmlFor="city" className="block mb-2">
+                    City *
+                  </label>
                   <input
                     type="text"
                     id="city"
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    className={`w-full bg-gray-800 border ${errors.city ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full bg-gray-800 border ${
+                      errors.city ? "border-red-500" : "border-gray-700"
+                    } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
-                  {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+                  {errors.city && (
+                    <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                  )}
                 </div>
-                
+
                 <div>
-                  <label htmlFor="postalCode" className="block mb-2">Zip/Postal Code *</label>
+                  <label htmlFor="postalCode" className="block mb-2">
+                    Zip/Postal Code *
+                  </label>
                   <input
                     type="text"
                     id="postalCode"
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleChange}
-                    className={`w-full bg-gray-800 border ${errors.postalCode ? 'border-red-500' : 'border-gray-700'} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full bg-gray-800 border ${
+                      errors.postalCode ? "border-red-500" : "border-gray-700"
+                    } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
-                  {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>}
+                  {errors.postalCode && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.postalCode}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -302,7 +425,9 @@ export default function ContactForm() {
                 )}
               </div>
 
-              <p className='text-purple-400'>Deposits are non-refundable unless stated in the contract.</p>
+              <p className="text-purple-400">
+                Deposits are non-refundable unless stated in the contract.
+              </p>
 
               <button
                 type="submit"
@@ -311,13 +436,6 @@ export default function ContactForm() {
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
               </button>
-
-              {submitSuccess && (
-                <div className="bg-green-600 text-white p-4 rounded-lg mt-4">
-                  Thank you! Your booking request has been sent successfully.
-                  We'll get back to you soon.
-                </div>
-              )}
             </form>
           </div>
 

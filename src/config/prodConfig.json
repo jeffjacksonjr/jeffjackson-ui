@@ -4,5 +4,6 @@
     "blockScheduleEndpoint":"https://jeffjackson-prod.onrender.com/api/blockSchedule",
     "enquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries",
     "sendDenialEmailEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries/sendDenialEmail",
-    "viewAgreementEndpoint":"https://jeffjackson-prod.onrender.com/api/viewAgreement"
+    "viewAgreementEndpoint":"https://jeffjackson-prod.onrender.com/api/viewAgreement",
+    "submitEnquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/public/enquiries"
 }
