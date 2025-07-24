@@ -52,42 +52,52 @@ const loadJsPDF = () => {
 function PdfPreviewSend({ pdfData, onClose, booking }) {
   const [email, setEmail] = useState(booking.email || "");
   const [isSending, setIsSending] = useState(false);
-  const [message, setMessage] = useState("");
+  const { token } = useSelector((state) => state.auth);
+  const config = getConfig();
 
   const handleSendEmail = async () => {
     if (!email) {
-      alert("Please enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
 
     setIsSending(true);
     try {
+      // Create FormData object
       const formData = new FormData();
-      formData.append("file", pdfData.blob, pdfData.fileName);
-      formData.append("email", email);
+      
+      // Append the PDF blob with the required filename format
       formData.append(
-        "subject",
-        `DJ Service Agreement for ${booking.clientName}`
+        "file", 
+        pdfData.blob, 
+        `${booking.uniqueId}.pdf` // Ensure filename is uniqueId.pdf
       );
-      formData.append(
-        "body",
-        "Please find attached your DJ Service Agreement."
+      
+      // Append other required fields
+      formData.append("clientEmail", email);
+      formData.append("uniqueId", booking.uniqueId);
+
+      // Make the API call with axios including the token
+      const response = await axios.post(
+        `${config.healthCheck}/api/sendAgreement`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${token}`
+          }
+        }
       );
 
-      const response = await fetch("/api/send-agreement", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        setMessage("Email sent successfully!");
+      if (response.data && response.data.status === "Success") {
+        toast.success("Agreement sent successfully!");
         setTimeout(() => onClose(), 2000);
       } else {
-        throw new Error("Failed to send email");
+        throw new Error(response.data?.message || "Failed to send agreement");
       }
     } catch (error) {
-      console.error("Error sending email:", error);
-      setMessage("Failed to send email. Please try again.");
+      console.error("Error sending agreement:", error);
+      toast.error(error.message || "Failed to send agreement. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -120,7 +130,7 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
               onChange={(e) => setEmail(e.target.value)}
               className="flex-grow bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
               placeholder="recipient@example.com"
-              disabled
+              disabled={isSending}
             />
 
             <button
@@ -132,23 +142,13 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
               {isSending ? "Sending..." : "Send"}
             </button>
           </div>
-          {message && (
-            <div
-              className={`mt-2 p-2 rounded ${
-                message.includes("success")
-                  ? "bg-green-900 text-green-300"
-                  : "bg-red-900 text-red-300"
-              }`}
-            >
-              {message}
-            </div>
-          )}
         </div>
 
         <div className="flex justify-end mt-4">
           <button
             onClick={onClose}
             className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+            disabled={isSending}
           >
             Close
           </button>
