@@ -17,9 +17,11 @@ import { setChecking, setConnected, setDisconnected } from './redux/systemStatus
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './redux/ProtectedRoute';
+import Confirmation from './booking/Confirmation';
 
 function AppContent() {
   const dispatch = useDispatch();
+  console.log("currency", process.env.REACT_APP_CURRENCY);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -60,6 +62,7 @@ function AppContent() {
         <Route path= "/" element={<Home/>}/>
         <Route path="/book-now" element={<BookingWizard/>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/confirmation" element={<Confirmation />} />
         <Route 
           path="/dashboard" 
           element={

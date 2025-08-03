@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ScrollToTop from '../utils/ScrollToTop'
+import { loadRazorpay } from '../utils/razorpay';
+import toast from 'react-hot-toast';
 
 export default function BookingWizard() {
   const [step, setStep] = useState(1);
@@ -464,6 +466,160 @@ function ClientDetailsStep({ date, time, clientDetails, onChange, onSubmit, onBa
 
 // Checkout Component
 function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPrice }) {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [showMessage, setShowMessage] = useState(false);
+  const navigate = useNavigate();
+
+  const handlePayment = async () => {
+    setLoading(true);
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${month}-${day}-${year}`;
+      };
+    
+    try {
+      // 1. First create the booking in your backend
+      const bookingResponse = await fetch('http://localhost:1526/api/public/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientName: clientDetails.name,
+          email: clientDetails.email,
+          phone: '+1' + clientDetails.phone,
+          eventType: clientDetails.eventType,
+          eventDate: formatDate(date),
+          eventTime: time,
+          street: clientDetails.street,
+          apt: clientDetails.apt,
+          city: clientDetails.city,
+          state: clientDetails.state,
+          message: clientDetails.message,
+          amount: currentPrice
+        }),
+      });
+
+      const bookingData = await bookingResponse.json();
+      
+      if (bookingData.status === 'error') {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        setShowMessage(true);
+        setMessage(bookingData.message + ". Please keep a note of your booking Id!!");
+        toast.error("Booking already exist!!" || 'Failed to create booking');
+        return;
+      }
+
+      // Show success toast for booking creation
+      toast.success('Booking created successfully! Proceeding to payment...');
+
+      // 2. Create payment order
+      const orderResponse = await fetch(
+        `http://localhost:1526/api/public/bookings/${bookingData.uniqueId}/payment/order?amount=${currentPrice}`, 
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const orderData = await orderResponse.json();
+      
+      if (!orderResponse.ok) {
+        toast.error(orderData.message || 'Failed to create payment order');
+        return;
+      }
+
+      // 3. Load Razorpay script
+      await loadRazorpay();
+
+      // 4. Open Razorpay checkout
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: orderData.amount * 100, // Convert to paise
+        currency: process.env.REACT_APP_CURRENCY || "USD",
+        name: "DJ Jeff Jackson Jr",
+        description: `Booking for ${clientDetails.eventType}`,
+        image: "/dj-profile2.png",
+        order_id: orderData.razorpayOrderId,
+        handler: async function(response) {
+          // Handle successful payment
+          try {
+            // Show loading toast for payment verification
+            const verificationToastId = toast.loading('Verifying payment...');
+            
+            const callbackResponse = await fetch(
+              'http://localhost:1526/api/public/bookings/payment/callback', 
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature
+                }),
+              }
+            );
+
+            const callbackData = await callbackResponse.json();
+            
+            // Dismiss loading toast
+            toast.dismiss(verificationToastId);
+            
+            if (!callbackResponse.ok) {
+              toast.error(callbackData.message || 'Payment verification failed');
+              return;
+            }
+
+            // Show success toast
+            toast.success('Payment successful!');
+            
+            // Navigate to confirmation page
+            navigate('/confirmation', { state: { booking: callbackData } });
+          } catch (error) {
+            toast.error(`Payment verification failed: ${error.message}`);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            toast.error('Payment cancelled');
+          }
+        },
+        prefill: {
+          name: clientDetails.name,
+          email: clientDetails.email,
+          contact: clientDetails.phone
+        },
+        notes: {
+          address: `${clientDetails.street}, ${clientDetails.city}, ${clientDetails.state}`,
+          booking_type: clientDetails.eventType
+        },
+        theme: {
+          color: "#6d28d9"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+    } catch (error) {
+      toast.error(`Payment failed: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <button
@@ -488,12 +644,19 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
 
       <h2 className="text-2xl font-bold mb-6">Complete Your Booking</h2>
 
+      {showMessage && 
+        (<div className="text-red-500 rounded-lg mb-6">
+          <p>{message} </p>
+          <Link to="/payment" className="text-purple-400 underline">
+            Go to Payment Portal</Link>
+          </div>)}
+
       {/* Booking details display */}
       <div className="mb-8">
-        <h3 className="font-bold mb-2">Booking Details</h3>
+        <h3 className="font-bold mb-2 text-purple-400">Booking Details</h3>
         <div className="bg-gray-800 p-4 rounded-lg">
           <p>Event DJ - <span className="text-purple-400">{clientDetails.eventType}</span></p>
-          <p>
+          <p className='text-purple-400'>
             {new Date(date).toLocaleDateString("en-US", {
               month: "long",
               day: "numeric",
@@ -510,13 +673,14 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
       <div className="mb-8">
         <h3 className="font-bold mb-2">Client Details</h3>
         <div className="bg-gray-800 p-4 rounded-lg">
-          <p>{clientDetails.name}</p>
-          <p>{clientDetails.email}</p>
-          <p>{clientDetails.phone}</p>
-          <p>{clientDetails.street}</p>
-          {clientDetails.apt && <p>{clientDetails.apt}</p>}
+          <p>Name: <span className='text-purple-400'>{clientDetails.name}</span></p>
+          <p>Email: <span className='text-purple-400'>{clientDetails.email}</span></p>
+          <p>Mobile: <span className='text-purple-400'>{clientDetails.phone}</span></p>
           <p>
-            {clientDetails.city}, {clientDetails.state}
+            Address: <span className='text-purple-400'>{clientDetails.street}
+            {clientDetails.apt && `, ${clientDetails.apt}`}
+            {clientDetails.city && `, ${clientDetails.city}`}
+            {clientDetails.state && `, ${clientDetails.state}`}</span>
           </p>
         </div>
       </div>
@@ -530,10 +694,11 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
       </div>
 
       <button
-        onClick={onConfirm}
-        className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-lg font-medium w-full"
+        onClick={handlePayment}
+        disabled={loading}
+        className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-lg font-medium w-full disabled:opacity-50"
       >
-        Pay ${currentPrice}
+        {loading ? 'Processing...' : `Pay $${currentPrice}`}
       </button>
     </div>
   );
