@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ScrollToTop from '../utils/ScrollToTop'
 import { loadRazorpay } from '../utils/razorpay';
 import toast from 'react-hot-toast';
+import { getConfig } from "../config/activeConfig";
 
 export default function BookingWizard() {
   const [step, setStep] = useState(1);
@@ -483,8 +484,9 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
       };
     
     try {
+      const config = getConfig();
       // 1. First create the booking in your backend
-      const bookingResponse = await fetch('http://localhost:1526/api/public/bookings', {
+      const bookingResponse = await fetch(config.submitBookingEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -523,7 +525,7 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
 
       // 2. Create payment order
       const orderResponse = await fetch(
-        `http://localhost:1526/api/public/bookings/${bookingData.uniqueId}/payment/order?amount=${currentPrice}`, 
+        `${config.submitBookingEndpoint}/${bookingData.uniqueId}/payment/order?amount=${currentPrice}`, 
         {
           method: 'POST',
           headers: {
@@ -558,7 +560,7 @@ function CheckoutStep({ date, time, clientDetails, onBack, onConfirm, currentPri
             const verificationToastId = toast.loading('Verifying payment...');
             
             const callbackResponse = await fetch(
-              'http://localhost:1526/api/public/bookings/payment/callback', 
+              `${config.submitBookingEndpoint}/payment/callback`, 
               {
                 method: 'POST',
                 headers: {

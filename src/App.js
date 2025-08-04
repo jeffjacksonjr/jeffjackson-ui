@@ -21,7 +21,6 @@ import Confirmation from './booking/Confirmation';
 
 function AppContent() {
   const dispatch = useDispatch();
-  console.log("currency", process.env.REACT_APP_CURRENCY);
 
   useEffect(() => {
     const checkHealth = async () => {
