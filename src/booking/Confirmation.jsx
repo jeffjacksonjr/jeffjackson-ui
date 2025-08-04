@@ -11,7 +11,7 @@ export default function Confirmation() {
     if (!booking) {
       navigate('/'); // Redirect to home if no booking data
     }
-  }, []);
+  }, [booking, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-black text-white">
