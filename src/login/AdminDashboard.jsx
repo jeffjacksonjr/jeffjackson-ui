@@ -709,6 +709,15 @@ function AdminDashboardContent() {
   hasNext: false,
   hasPrevious: false
 });
+
+const [bookingPagination, setBookingPagination] = useState({
+  currentPage: 0,
+  pageSize: 10,
+  totalItems: 0,
+  totalPages: 1,
+  hasNext: false,
+  hasPrevious: false
+});
   
   const config = getConfig();
   const api = axios.create({
@@ -825,6 +834,23 @@ function AdminDashboardContent() {
     booking: null,
   });
 
+  const formatBookingDate = (dateString) => {
+  // Handle both "MM-DD-YYYY" and ISO format
+  if (dateString.includes('-')) {
+    const [month, day, year] = dateString.split('-');
+    return new Date(`${year}-${month}-${day}`).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
   useEffect(() => {
     fetchBlockedDates();
     fetchBookings();
@@ -845,48 +871,49 @@ function AdminDashboardContent() {
   }
 };
 
-  const fetchBookings = async () => {
-    setBookings([
-      {
-        id: "BK123456",
-        clientName: "John Doe",
-        email: "john.doe@example.com",
-        phone: "+1 555-123-4567",
-        eventType: "Wedding Reception",
-        type: "booking",
-        eventDate: "2023-06-12",
-        eventTime: "6:00 PM",
-        street: "123 Main Street",
-        apt: "Apt 4B",
-        city: "New York",
-        state: "NY",
-        message: "Need DJ for our wedding reception from 6PM to midnight",
-        status: "Paid",
-        depositReceived: "$500",
-        totalAmount: "$500",
-        remainingAmount: "$0",
-      },
-      {
-        id: "BK789012",
-        clientName: "Jane Smith",
-        email: "jane.smith@example.com",
-        phone: "+1 555-987-6543",
-        eventType: "Corporate Event",
-        type: "booking",
-        eventDate: "2023-06-18",
-        eventTime: "8:00 PM",
-        street: "456 Business Ave",
-        apt: "",
-        city: "Brooklyn",
-        state: "NY",
-        message: "Annual company party with 100+ guests",
-        status: "Pending",
-        depositReceived: "$750",
-        totalAmount: "$1500",
-        remainingAmount: "$750",
-      },
-    ]);
-  };
+  const fetchBookings = async (page = 0) => {
+  try {
+    const response = await api.get(`${config.bookingEndpoint}?page=${page}`);
+    const { content, meta } = response.data;
+    
+    // Transform the data to match your UI structure
+    const transformedBookings = content.map(booking => ({
+      id: booking.uniqueId,
+      uniqueId: booking.uniqueId,
+      clientName: booking.clientName,
+      email: booking.email,
+      phone: booking.phone,
+      eventType: booking.eventType,
+      type: "booking",
+      eventDate: booking.eventDate,
+      eventTime: booking.eventTime,
+      address: booking.address,
+      message: booking.message || "-",
+      status: booking.status,
+      depositReceived: `$${booking.depositReceived || "0"}`,
+      totalAmount: `$${booking.totalAmount || "0"}`,
+      remainingAmount: `$${booking.remainingAmount || "0"}`,
+      agreementUrl: booking.agreementUrl,
+      createdAt: booking.createdAt
+    }));
+
+    setBookings(transformedBookings);
+    setBookingPagination({
+      currentPage: meta.currentPage,
+      pageSize: meta.pageSize,
+      totalItems: meta.totalItems,
+      totalPages: meta.totalPages,
+      hasNext: meta.hasNext,
+      hasPrevious: meta.hasPrevious
+    });
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to fetch bookings. Please try again."
+    );
+  }
+};
 
   const fetchEnquiries = async (page = 0) => {
   try {
@@ -1093,150 +1120,272 @@ const handleSearch = async (e) => {
 
         <Tab.Panels>
           {/* Bookings Tab */}
-          <Tab.Panel>
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Current Bookings</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-700">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Booking ID
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Full Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Phone
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Event Type
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Event Date
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Address
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Message
-                      </th>
-                      {/* Changed order of these columns */}
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Deposit Received
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Total Amount
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Remaining Amount
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {bookings.map((booking) => (
-                      <tr key={booking.id}>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {booking.id}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {booking.clientName}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {booking.email}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {booking.phone}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {booking.eventType}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {new Date(booking.eventDate).toLocaleDateString()} at{" "}
-                          {booking.eventTime}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal">
-                          {booking.street}
-                          {booking.apt ? `, ${booking.apt}` : ""},{" "}
-                          {booking.city}, {booking.state}
-                        </td>
-                        <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
-                          {booking.message || "-"}
-                        </td>
-                        {/* Changed order of these columns to match header */}
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
-                            {booking.depositReceived}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
-                              {booking.totalAmount}
-                            </span>
-                            <button
-                              onClick={() =>
-                                setEditAmountModal({
-                                  isOpen: true,
-                                  bookingId: booking.id,
-                                  fieldToEdit: "total",
-                                  depositReceived:
-                                    booking.depositReceived.replace(/\D/g, ""),
-                                  totalAmount: booking.totalAmount.replace(
-                                    /\D/g,
-                                    ""
-                                  ),
-                                })
-                              }
-                              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-5 py-2 rounded-full font-medium transition duration-300 transform hover:scale-105 text-xs"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              parseInt(
-                                booking.remainingAmount.replace(/\D/g, "")
-                              ) > 0
-                                ? "bg-yellow-900 text-yellow-300"
-                                : "bg-green-900 text-green-300"
-                            }`}
-                          >
-                            {booking.remainingAmount}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <button
-                            onClick={() =>
-                              setAgreementModal({
-                                isOpen: true,
-                                booking: {
-                                  ...booking,
-                                  amount: booking.depositReceived,
-                                },
-                              })
-                            }
-                            className="text-purple-400 hover:text-purple-300"
-                            title="Send Agreement"
-                          >
-                            <PaperAirplaneIcon className="h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Tab.Panel>
+<Tab.Panel>
+  <div className="bg-gray-900 rounded-lg p-6">
+    <h2 className="text-xl font-bold mb-4">Current Bookings</h2>
+    
+    {/* Pagination Controls - Top */}
+    <div className="flex justify-between items-center mb-4">
+      <div className="text-sm text-gray-400">
+        Showing page {bookingPagination.currentPage + 1} of{" "}
+        {bookingPagination.totalPages}
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={() => fetchBookings(bookingPagination.currentPage - 1)}
+          disabled={!bookingPagination.hasPrevious}
+          className={`px-3 py-1 rounded-lg ${
+            bookingPagination.hasPrevious
+              ? "bg-purple-600 hover:bg-purple-700"
+              : "bg-gray-700 cursor-not-allowed"
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => fetchBookings(bookingPagination.currentPage + 1)}
+          disabled={!bookingPagination.hasNext}
+          className={`px-3 py-1 rounded-lg ${
+            bookingPagination.hasNext
+              ? "bg-purple-600 hover:bg-purple-700"
+              : "bg-gray-700 cursor-not-allowed"
+          }`}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead>
+          <tr>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Booking ID
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Full Name
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Email
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Phone
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Event Type
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Event Date
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Address
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Message
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Deposit Received
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Total Amount
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Remaining Amount
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Status
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-700">
+          {bookings.map((booking) => (
+            <tr key={booking.id}>
+              <td className="px-4 py-3 whitespace-nowrap">
+                {booking.uniqueId}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {booking.clientName}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {booking.email}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {booking.phone}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {booking.eventType}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {formatBookingDate(booking.eventDate)} at {booking.eventTime}
+              </td>
+              <td className="px-4 py-3 whitespace-normal">
+                {booking.address}
+              </td>
+              <td className="px-4 py-3 whitespace-normal max-w-xs break-words">
+                {booking.message}
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
+                  {booking.depositReceived}
+                </span>
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+  <div className="flex items-center">
+    <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+      {booking.totalAmount}
+    </span>
+    <button
+      onClick={() =>
+        setEditAmountModal({
+          isOpen: true,
+          bookingId: booking.uniqueId,
+          fieldToEdit: "total",
+          totalAmount: booking.totalAmount.replace(/\D/g, ""),
+          status: booking.status
+        })
+      }
+      className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+    >
+      Edit
+    </button>
+  </div>
+</td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                <span
+                  className={`px-2 py-1 text-xs rounded-full ${
+                    parseInt(booking.remainingAmount.replace(/\D/g, "")) > 0
+                      ? "bg-yellow-900 text-yellow-300"
+                      : "bg-green-900 text-green-300"
+                  }`}
+                >
+                  {booking.remainingAmount}
+                </span>
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+  <div className="flex items-center">
+    <span className={`px-2 py-1 text-xs rounded-full ${
+      booking.status === "CONFIRMED"
+        ? "bg-green-900 text-green-300"
+        : booking.status === "PENDING"
+        ? "bg-yellow-900 text-yellow-300"
+        : booking.status === "CANCELLED" || booking.status === "NO_SHOW"
+        ? "bg-red-900 text-red-300"
+        : booking.status === "COMPLETED"
+        ? "bg-blue-900 text-blue-300"
+        : "bg-purple-900 text-purple-300"
+    }`}>
+      {booking.status.replace("_", " ")}
+    </span>
+    <button
+      onClick={() =>
+        setEditAmountModal({
+          isOpen: true,
+          bookingId: booking.uniqueId,
+          fieldToEdit: "bookingStatus",
+          status: booking.status,
+          totalAmount: booking.totalAmount.replace(/\D/g, "")
+        })
+      }
+      className="ml-2 text-purple-400 hover:text-purple-300"
+      title="Edit Status"
+    >
+      <PencilIcon className="h-4 w-4" />
+    </button>
+  </div>
+</td>
+              <td className="px-4 py-3 whitespace-nowrap">
+                <button
+                  onClick={() =>
+                    setAgreementModal({
+                      isOpen: true,
+                      booking: {
+                        ...booking,
+                        amount: booking.depositReceived,
+                      },
+                    })
+                  }
+                  className="text-purple-400 hover:text-purple-300"
+                  title="Send Agreement"
+                >
+                  <PaperAirplaneIcon className="h-5 w-5" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Pagination Controls - Bottom */}
+    <div className="flex justify-between items-center mt-4">
+      <div className="text-sm text-gray-400">
+        Showing {bookings.length} of {bookingPagination.totalItems} bookings
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={() => fetchBookings(bookingPagination.currentPage - 1)}
+          disabled={!bookingPagination.hasPrevious}
+          className={`px-3 py-1 rounded-lg ${
+            bookingPagination.hasPrevious
+              ? "bg-purple-600 hover:bg-purple-700"
+              : "bg-gray-700 cursor-not-allowed"
+          }`}
+        >
+          Previous
+        </button>
+        <div className="flex space-x-1">
+          {Array.from(
+            { length: Math.min(5, bookingPagination.totalPages) },
+            (_, i) => {
+              let pageNum;
+              if (bookingPagination.totalPages <= 5) {
+                pageNum = i;
+              } else if (bookingPagination.currentPage <= 2) {
+                pageNum = i;
+              } else if (
+                bookingPagination.currentPage >=
+                bookingPagination.totalPages - 3
+              ) {
+                pageNum = bookingPagination.totalPages - 5 + i;
+              } else {
+                pageNum = bookingPagination.currentPage - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => fetchBookings(pageNum)}
+                  className={`px-3 py-1 rounded-lg ${
+                    bookingPagination.currentPage === pageNum
+                      ? "bg-purple-800"
+                      : "bg-purple-600 hover:bg-purple-700"
+                  }`}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            }
+          )}
+        </div>
+        <button
+          onClick={() => fetchBookings(bookingPagination.currentPage + 1)}
+          disabled={!bookingPagination.hasNext}
+          className={`px-3 py-1 rounded-lg ${
+            bookingPagination.hasNext
+              ? "bg-purple-600 hover:bg-purple-700"
+              : "bg-gray-700 cursor-not-allowed"
+          }`}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</Tab.Panel>
 
           {/* Enquiries Tab */}
           <Tab.Panel>
@@ -2127,6 +2276,31 @@ const handleSearch = async (e) => {
       <option value="IN_PROGRESS">In Progress</option>
       <option value="ON_HOLD">On Hold</option>
       <option value="FINALIZED">Finalized</option>
+    </select>
+  </div>
+)}
+
+{editAmountModal.fieldToEdit === "bookingStatus" && (
+  <div>
+    <h3 className="text-lg font-bold mb-4">Update Status</h3>
+    <label className="block text-sm font-medium mb-1">Status</label>
+    <select
+      value={editAmountModal.status}
+      onChange={(e) =>
+        setEditAmountModal({
+          ...editAmountModal,
+          status: e.target.value
+        })
+      }
+      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+      required
+    >
+      <option value="PENDING">PENDING</option>
+      <option value="CONFIRMED">CONFIRMED</option>
+      <option value="CANCELLED">CANCELLED</option>
+      <option value="COMPLETED">COMPLETED</option>
+      <option value="NO_SHOW">NO_SHOW</option>
+      <option value="REFUNDED">REFUNDED</option>
     </select>
   </div>
 )}
