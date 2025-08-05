@@ -718,6 +718,14 @@ const [bookingPagination, setBookingPagination] = useState({
   hasNext: false,
   hasPrevious: false
 });
+
+const [editBookingModal, setEditBookingModal] = useState({
+  isOpen: false,
+  bookingId: null,
+  fieldToEdit: null, // 'totalAmount' or 'status'
+  totalAmount: "",
+  status: ""
+});
   
   const config = getConfig();
   const api = axios.create({
@@ -728,6 +736,71 @@ const [bookingPagination, setBookingPagination] = useState({
   withCredentials: true // Important for CORS with credentials
   }
 );
+
+const handleUpdateBooking = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Prepare the payload based on what field is being edited
+    let payload = {
+      uniqueId: editBookingModal.bookingId,
+      type: "booking"
+    };
+
+    if (editBookingModal.fieldToEdit === "totalAmount") {
+      payload.totalAmount = editBookingModal.totalAmount;
+    } else if (editBookingModal.fieldToEdit === "status") {
+      payload.status = editBookingModal.status;
+    }
+
+    // Make the PATCH request to the booking endpoint
+    const response = await api.patch(`${config.bookingEndpoint}`, payload);
+
+    if (response.data.status === "Fail") {
+      toast.error(response.data.message || "Booking update failed");
+      return;
+    }
+
+    // Update the local state if the API call was successful
+    setBookings(
+      bookings.map((booking) => {
+        if (booking.uniqueId === editBookingModal.bookingId) {
+          const updatedBooking = { ...booking };
+          
+          if (editBookingModal.fieldToEdit === "totalAmount") {
+            updatedBooking.totalAmount = `$${editBookingModal.totalAmount}`;
+            // Recalculate remaining amount
+            const depositAmount = parseInt(booking.depositReceived.replace(/\D/g, "") || 0);
+            updatedBooking.remainingAmount = `$${parseInt(editBookingModal.totalAmount) - depositAmount}`;
+          } else if (editBookingModal.fieldToEdit === "status") {
+            updatedBooking.status = editBookingModal.status;
+          }
+
+          return updatedBooking;
+        }
+        return booking;
+      })
+    );
+
+    toast.success("Booking updated successfully");
+    
+    // Close the modal
+    setEditBookingModal({
+      isOpen: false,
+      bookingId: null,
+      fieldToEdit: null,
+      totalAmount: "",
+      status: ""
+    });
+
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    toast.error(
+      error.response?.data?.message || 
+      "Failed to update booking. Please try again."
+    );
+  }
+};
 
   // Add this function to handle amount updates
   const handleUpdateAmount = async (e) => {
@@ -1239,19 +1312,19 @@ const handleSearch = async (e) => {
       {booking.totalAmount}
     </span>
     <button
-      onClick={() =>
-        setEditAmountModal({
-          isOpen: true,
-          bookingId: booking.uniqueId,
-          fieldToEdit: "total",
-          totalAmount: booking.totalAmount.replace(/\D/g, ""),
-          status: booking.status
-        })
-      }
-      className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
-    >
-      Edit
-    </button>
+  onClick={() =>
+    setEditBookingModal({
+      isOpen: true,
+      bookingId: booking.uniqueId,
+      fieldToEdit: "totalAmount",
+      totalAmount: booking.totalAmount.replace(/\D/g, ""),
+      status: booking.status
+    })
+  }
+  className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+>
+  Edit
+</button>
   </div>
 </td>
               <td className="px-4 py-3 whitespace-nowrap">
@@ -1281,20 +1354,20 @@ const handleSearch = async (e) => {
       {booking.status.replace("_", " ")}
     </span>
     <button
-      onClick={() =>
-        setEditAmountModal({
-          isOpen: true,
-          bookingId: booking.uniqueId,
-          fieldToEdit: "bookingStatus",
-          status: booking.status,
-          totalAmount: booking.totalAmount.replace(/\D/g, "")
-        })
-      }
-      className="ml-2 text-purple-400 hover:text-purple-300"
-      title="Edit Status"
-    >
-      <PencilIcon className="h-4 w-4" />
-    </button>
+  onClick={() =>
+    setEditBookingModal({
+      isOpen: true,
+      bookingId: booking.uniqueId,
+      fieldToEdit: "status",
+      status: booking.status,
+      totalAmount: booking.totalAmount.replace(/\D/g, "")
+    })
+  }
+  className="ml-2 text-purple-400 hover:text-purple-300"
+  title="Edit Status"
+>
+  <PencilIcon className="h-4 w-4" />
+</button>
   </div>
 </td>
               <td className="px-4 py-3 whitespace-nowrap">
@@ -2351,6 +2424,90 @@ const handleSearch = async (e) => {
     </div>
   </div>
 )}
+
+{/* Booking Update Modal */}
+{editBookingModal.isOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+      <h3 className="text-lg font-bold mb-4">
+        {editBookingModal.fieldToEdit === "totalAmount" && "Edit Booking Total Amount"}
+        {editBookingModal.fieldToEdit === "status" && "Update Booking Status"}
+      </h3>
+      <form onSubmit={handleUpdateBooking} className="space-y-4">
+        {editBookingModal.fieldToEdit === "totalAmount" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Total Amount ($)
+            </label>
+            <input
+              type="number"
+              value={editBookingModal.totalAmount}
+              onChange={(e) =>
+                setEditBookingModal({
+                  ...editBookingModal,
+                  totalAmount: e.target.value,
+                })
+              }
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
+          </div>
+        )}
+
+        {editBookingModal.fieldToEdit === "status" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Status
+            </label>
+            <select
+              value={editBookingModal.status}
+              onChange={(e) =>
+                setEditBookingModal({
+                  ...editBookingModal,
+                  status: e.target.value,
+                })
+              }
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            >
+              <option value="PENDING">PENDING</option>
+              <option value="CONFIRMED">CONFIRMED</option>
+              <option value="CANCELLED">CANCELLED</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="NO_SHOW">NO SHOW</option>
+              <option value="REFUNDED">REFUNDED</option>
+            </select>
+          </div>
+        )}
+
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() =>
+              setEditBookingModal({
+                isOpen: false,
+                bookingId: null,
+                fieldToEdit: null,
+                totalAmount: "",
+                status: ""
+              })
+            }
+            className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
