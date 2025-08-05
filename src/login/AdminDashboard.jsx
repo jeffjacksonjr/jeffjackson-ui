@@ -1852,68 +1852,65 @@ const handleSearch = async (e) => {
                     No blocked dates found
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-700">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Time
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Reason
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Type
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {blockedDates.map((block) => (
-                          <tr key={block.id}>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {block.date}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {block.time}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {block.reason || "-"}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span
-                                className={`px-2 py-1 text-xs rounded-full ${
-                                  block.type === "SYSTEM"
-                                    ? "bg-blue-900 text-blue-300"
-                                    : "bg-purple-900 text-purple-300"
-                                }`}
-                              >
-                                {block.type.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {block.type === "user" && (
-                                <button
-                                  onClick={() =>
-                                    confirmDeleteBlockedDate(block.id)
-                                  }
-                                  className="text-red-400 hover:text-red-300"
-                                >
-                                  <XCircleIcon className="h-5 w-5" />
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Time
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Reason
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {blockedDates.map((block) => (
+                <tr key={block.id}>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.date}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.time}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {block.reason || "-"}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        block.type === "SYSTEM"
+                          ? "bg-blue-900 text-blue-300"
+                          : "bg-purple-900 text-purple-300"
+                      }`}
+                    >
+                      {block.type.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <button
+                      onClick={() => confirmDeleteBlockedDate(block.id)}
+                      className="text-red-400 hover:text-red-300"
+                      title="Delete"
+                    >
+                      <XCircleIcon className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
               </div>
             </div>
           </Tab.Panel>
