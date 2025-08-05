@@ -292,9 +292,7 @@ doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
 yPos += 12;
 
       // Address spans full width
-      const addressText = `Event Location: ${booking.street}${
-        booking.apt ? `, ${booking.apt}` : ""
-      }, ${booking.city}, ${booking.state}`;
+      const addressText = `Event Location: ${booking.address}`;
       yPos += addWrappedText(
         doc,
         addressText,
@@ -693,6 +691,7 @@ function AdminDashboardContent() {
   const [searchBookingId, setSearchBookingId] = useState('');
   const [searchId, setSearchId] = useState('');
   const [searchResults, setSearchResults] = useState(null);
+  const [viewAgreement, setViewAgreement] = useState(false);
   const [editAmountModal, setEditAmountModal] = useState({
   isOpen: false,
   bookingId: null,
@@ -1144,12 +1143,14 @@ const handleSearch = async (e) => {
     // Make POST request with the data in the body
     response = await api.post(config.viewAgreementEndpoint, requestData);
 
-    if (response.data) {
+    if (response.data.status === "Fail") {
+      toast.error(response.data.message || "No agreement found");
+      setViewAgreement(false);
+      setSearchResults(null);
+    } else {
+      setViewAgreement(true);
       setSearchResults(response.data);
       toast.success("Agreement details retrieved successfully");
-    } else {
-      toast.error("No agreement found with those details");
-      setSearchResults(null);
     }
   } catch (error) {
     console.error("Error searching for agreement:", error);
@@ -2025,7 +2026,7 @@ const handleSearch = async (e) => {
               </div>
 
               {/* Search Results */}
-              {searchResults && (
+              {viewAgreement && (
   <div className="bg-gray-900 rounded-lg p-6">
     <h3 className="mt-5 text-lg font-bold mb-4">
       Agreement Details
