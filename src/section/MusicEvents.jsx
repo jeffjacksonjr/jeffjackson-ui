@@ -88,7 +88,7 @@ export default function MusicEvents() {
       <div className="container mx-auto px-6">
         
         <div>
-          <h3 className="text-2xl font-semibold mb-8 text-center max-h-screen" id="#events">Upcoming <span className="text-purple-400">Events</span></h3>
+          <h3 className="text-2xl font-semibold mb-8 text-center max-h-screen" id="#events">Client <span className="text-purple-400">Reviews</span></h3>
           <div className="max-w-3xl mx-auto">
             {events.map((event, index) => (
               <div key={index} className="bg-gray-900 rounded-lg p-6 mb-4 last:mb-0 flex flex-col md:flex-row justify-between items-center">
@@ -110,7 +110,7 @@ export default function MusicEvents() {
             {events.length === 0 && 
             <div className="bg-gray-900 rounded-lg p-6 mb-4 last:mb-0 flex flex-col md:flex-row justify-center items-center">
                 <div className="mb-4 md:mb-0">
-                  <center className="text-xl font-bold">No events at the moment</center>
+                  <center className="text-xl font-bold">No reviews to show</center>
                   {/* <p className="text-purple-300">{event.location}</p> */}
                 </div> </div> }
           </div>

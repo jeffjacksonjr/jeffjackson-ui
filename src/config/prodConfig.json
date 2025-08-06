@@ -5,5 +5,6 @@
     "enquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries",
     "sendDenialEmailEndpoint":"https://jeffjackson-prod.onrender.com/api/enquiries/sendDenialEmail",
     "viewAgreementEndpoint":"https://jeffjackson-prod.onrender.com/api/viewAgreement",
-    "submitEnquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/public/enquiries"
+    "submitEnquiryEndpoint":"https://jeffjackson-prod.onrender.com/api/public/enquiries",
+    "bookingEndpoint":"https://jeffjackson-prod.onrender.com/api/bookings"
 }

@@ -22,9 +22,10 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'About', href: '#about' },
-    { name: 'Events', href: '#events' },
+    // { name: 'Events', href: '#events' },
     { name: 'Gallery', href: '#gallery' },
     { name: 'Enquiry', href: '#contact' },
+    { name: 'Upload', href: '/upload' },
     { name: 'Payment', href: '/payment' },
     isAuthenticated 
       ? { name: 'Logout', onClick: handleLogout }

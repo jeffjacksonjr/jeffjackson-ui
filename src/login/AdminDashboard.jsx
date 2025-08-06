@@ -52,7 +52,6 @@ const loadJsPDF = () => {
 function PdfPreviewSend({ pdfData, onClose, booking }) {
   const [email, setEmail] = useState(booking.email || "");
   const [isSending, setIsSending] = useState(false);
-  const { token } = useSelector((state) => state.auth);
   const config = getConfig();
 
   const handleSendEmail = async () => {
@@ -76,15 +75,15 @@ function PdfPreviewSend({ pdfData, onClose, booking }) {
       // Append other required fields
       formData.append("clientEmail", email);
       formData.append("uniqueId", booking.uniqueId);
+      formData.append("type","admin");
 
       // Make the API call with axios including the token
       const response = await axios.post(
-        `${config.healthCheck}/api/sendAgreement`,
+        `${config.healthCheck}/api/public/sendAgreement`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${token}`
+            "Content-Type": "multipart/form-data"
           }
         }
       );

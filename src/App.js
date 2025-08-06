@@ -18,6 +18,7 @@ import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './redux/ProtectedRoute';
 import Confirmation from './booking/Confirmation';
+import AgreementUpload from './uploadAgreement/AgreementUpload';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ function AppContent() {
         <Route path= "/" element={<Home/>}/>
         <Route path="/book-now" element={<BookingWizard/>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/upload" element={<AgreementUpload />} />
         <Route path="/confirmation" element={<Confirmation />} />
         <Route 
           path="/dashboard" 
