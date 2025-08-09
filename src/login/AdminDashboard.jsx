@@ -1238,10 +1238,15 @@ const handleSearch = async (e) => {
     </div>
 
     <div className="overflow-x-auto">
-      {bookings.length === 0 ? (
-    <TableLoader columns={13} rows={10} />
-  ) : (
-      <table className="min-w-full divide-y divide-gray-700">
+      {isLoading ? (
+        <TableLoader columns={13} rows={10} />
+      ) : bookings.length === 0 ? (
+        <div className="text-center py-8">
+          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-200">No bookings found</h3>
+          <p className="mt-1 text-sm text-gray-500">There are currently no bookings in the system.</p>
+        </div>
+      ) : (<table className="min-w-full divide-y divide-gray-700">
         <thead>
           <tr>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -1512,9 +1517,15 @@ const handleSearch = async (e) => {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                {enquiries.length === 0 ? (
-                <TableLoader columns={13} rows={10} />
-              ) : (
+      {isLoading ? (
+        <TableLoader columns={13} rows={10} />
+      ) : enquiries.length === 0 ? (
+        <div className="text-center py-8">
+          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-200">No enquiries found</h3>
+          <p className="mt-1 text-sm text-gray-500">There are currently no pending enquiries.</p>
+        </div>
+      ) : (
                 <table className="min-w-full divide-y divide-gray-700">
   <thead>
     <tr>
