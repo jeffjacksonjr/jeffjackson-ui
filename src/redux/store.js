@@ -4,6 +4,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import systemStatusReducer from './systemStatusSlice';
 import authReducer from './authSlice';
+import adminDashboardReducer from './adminDashboardSlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -11,9 +12,16 @@ const authPersistConfig = {
   whitelist: ['token', 'user', 'expiresAt']
 };
 
+const adminDashboardPersistConfig = {
+  key: 'adminDashboard',
+  storage,
+  whitelist: ['selectedTab']
+};
+
 const rootReducer = {
   systemStatus: systemStatusReducer,
-  auth: persistReducer(authPersistConfig, authReducer)
+  auth: persistReducer(authPersistConfig, authReducer),
+  adminDashboard: persistReducer(adminDashboardPersistConfig, adminDashboardReducer)
 };
 
 export const store = configureStore({

@@ -19,18 +19,24 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
-  const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'About', href: '#about' },
-    // { name: 'Events', href: '#events' },
-    { name: 'Gallery', href: '#gallery' },
-    { name: 'Enquiry', href: '#contact' },
-    { name: 'Upload', href: '/upload' },
-    { name: 'Payment', href: '/payment' },
-    isAuthenticated 
-      ? { name: 'Logout', onClick: handleLogout }
-      : { name: 'Login', href: '/login' },
-  ];
+  
+const navLinks = [
+  { name: 'Home', href: '#home' },
+  { name: 'About', href: '#about' },
+  { name: 'Gallery', href: '#gallery' },
+  { name: 'Enquiry', href: '#contact' },
+  { name: 'Upload', href: '/upload' },
+  { name: 'Payment', href: '/payment' },
+  ...(isAuthenticated 
+    ? [
+        { name: 'Dashboard', href: '/dashboard' },
+        { name: 'Logout', onClick: handleLogout }
+      ] 
+    : [
+        { name: 'Login', href: '/login' }
+      ]
+  ),
+];
 
   // Handle navigation with proper scroll behavior
   const handleNavigation = (href, event) => {

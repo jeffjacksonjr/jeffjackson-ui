@@ -11,11 +11,12 @@ import {
 } from "@heroicons/react/24/outline";
 import ProtectedRoute from "../redux/ProtectedRoute";
 import { toast } from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch  } from "react-redux";
 import { getConfig } from '../config/activeConfig';
 import axios from 'axios';
 import { PencilIcon } from "@heroicons/react/24/outline";
 import TableLoader from "../utils/TableLoader";
+import { setSelectedTab } from '../redux/adminDashboardSlice';
 
 // Constants for colors and dimensions
 const COLORS = {
@@ -879,7 +880,8 @@ const handleUpdateBooking = async (e) => {
   }
 };
 
-  const [selectedTab, setSelectedTab] = useState(0);
+  const dispatch = useDispatch();
+  const selectedTab = useSelector((state) => state.adminDashboard.selectedTab);
   const [blockedDates, setBlockedDates] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
@@ -1177,7 +1179,7 @@ const handleSearch = async (e) => {
         Dashboard
       </h1>
 
-      <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+      <Tab.Group selectedIndex={selectedTab} onChange={(index) => dispatch(setSelectedTab(index))}>
         <Tab.List className="flex space-x-1 rounded-lg bg-gray-900 p-1 mb-6">
           {["Bookings", "Enquiries", "Block Schedule", "Agreements"].map(
             (tab) => (
