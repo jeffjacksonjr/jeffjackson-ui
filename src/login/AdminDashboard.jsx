@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { getConfig } from '../config/activeConfig';
 import axios from 'axios';
 import { PencilIcon } from "@heroicons/react/24/outline";
+import TableLoader from "../utils/TableLoader";
 
 // Constants for colors and dimensions
 const COLORS = {
@@ -724,6 +725,8 @@ const [editBookingModal, setEditBookingModal] = useState({
   totalAmount: "",
   status: ""
 });
+
+const [isLoading, setIsLoading] = useState(true);
   
   const config = getConfig();
   const api = axios.create({
@@ -931,6 +934,7 @@ const handleUpdateBooking = async (e) => {
 
   const fetchBlockedDates = async () => {
   try {
+    setIsLoading(true);
     const response = await api.get('/api/blockSchedule');
     setBlockedDates(response.data);
   } catch (error) {
@@ -939,6 +943,8 @@ const handleUpdateBooking = async (e) => {
       error.response?.data?.message || 
       "Failed to fetch blocked dates. Please try again."
     );
+  }finally{
+    setIsLoading(false);
   }
 };
 
@@ -1230,6 +1236,9 @@ const handleSearch = async (e) => {
     </div>
 
     <div className="overflow-x-auto">
+      {bookings.length === 0 ? (
+    <TableLoader columns={13} rows={10} />
+  ) : (
       <table className="min-w-full divide-y divide-gray-700">
         <thead>
           <tr>
@@ -1390,7 +1399,7 @@ const handleSearch = async (e) => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table>)}
     </div>
 
     {/* Pagination Controls - Bottom */}
@@ -1501,6 +1510,9 @@ const handleSearch = async (e) => {
                 </div>
               </div>
               <div className="overflow-x-auto">
+                {enquiries.length === 0 ? (
+                <TableLoader columns={13} rows={10} />
+              ) : (
                 <table className="min-w-full divide-y divide-gray-700">
   <thead>
     <tr>
@@ -1690,7 +1702,7 @@ const handleSearch = async (e) => {
       </tr>
     ))}
   </tbody>
-</table>
+                </table>)}
               </div>
 
               {/* Pagination Controls - Bottom */}
@@ -1766,93 +1778,121 @@ const handleSearch = async (e) => {
           </Tab.Panel>
 
           {/* Block Dates Tab */}
-          <Tab.Panel>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Block Schedule
-                </h2>
-                <form onSubmit={handleBlockDate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={newBlock.date}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, date: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      required
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Time *
-                    </label>
-                    <select
-                      value={newBlock.time}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, time: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      required
-                    >
-                      <option value="">Select time</option>
-                      <option value="08:00 AM">08:00 AM</option>
-                      <option value="09:00 AM">09:00 AM</option>
-                      <option value="10:00 AM">10:00 AM</option>
-                      <option value="11:00 AM">11:00 AM</option>
-                      <option value="12:00 PM">12:00 PM</option>
-                      <option value="01:00 PM">01:00 PM</option>
-                      <option value="02:00 PM">02:00 PM</option>
-                      <option value="03:00 PM">03:00 PM</option>
-                      <option value="04:00 PM">04:00 PM</option>
-                      <option value="05:00 PM">05:00 PM</option>
-                      <option value="06:00 PM">06:00 PM</option>
-                      <option value="07:00 PM">07:00 PM</option>
-                      <option value="08:00 PM">08:00 PM</option>
-                      <option value="09:00 PM">09:00 PM</option>
-                      <option value="10:00 PM">10:00 PM</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Reason
-                    </label>
-                    <input
-                      type="text"
-                      value={newBlock.reason}
-                      onChange={(e) =>
-                        setNewBlock({ ...newBlock, reason: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                      placeholder="Optional reason for blocking"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
-                  >
-                    Block Schedule
-                  </button>
-                </form>
+<Tab.Panel>
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    {/* Block Schedule Form (left side) */}
+    <div className="bg-gray-900 rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        <CalendarIcon className="h-5 w-5 mr-2 text-purple-400" />
+        Block Schedule
+      </h2>
+      <form onSubmit={handleBlockDate} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Date *
+          </label>
+          <input
+            type="date"
+            value={newBlock.date}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, date: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            required
+            min={new Date().toISOString().split("T")[0]}
+            onClick={(e) => e.target.showPicker()}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Time *
+          </label>
+          <select
+            value={newBlock.time}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, time: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            required
+          >
+            <option value="">Select time</option>
+            <option value="08:00 AM">08:00 AM</option>
+            <option value="09:00 AM">09:00 AM</option>
+            <option value="10:00 AM">10:00 AM</option>
+            <option value="11:00 AM">11:00 AM</option>
+            <option value="12:00 PM">12:00 PM</option>
+            <option value="01:00 PM">01:00 PM</option>
+            <option value="02:00 PM">02:00 PM</option>
+            <option value="03:00 PM">03:00 PM</option>
+            <option value="04:00 PM">04:00 PM</option>
+            <option value="05:00 PM">05:00 PM</option>
+            <option value="06:00 PM">06:00 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
+            <option value="08:00 PM">08:00 PM</option>
+            <option value="09:00 PM">09:00 PM</option>
+            <option value="10:00 PM">10:00 PM</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Reason
+          </label>
+          <input
+            type="text"
+            value={newBlock.reason}
+            onChange={(e) =>
+              setNewBlock({ ...newBlock, reason: e.target.value })
+            }
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+            placeholder="Optional reason for blocking"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg"
+        >
+          Block Schedule
+        </button>
+      </form>
+    </div>
+
+    {/* Blocked Schedule List (right side) */}
+    <div className="bg-gray-900 rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
+        Blocked Schedule
+      </h2>
+      
+      <div className="overflow-x-auto">
+        {isLoading ? (
+          <div className="w-full overflow-x-auto">
+            <div className="animate-pulse space-y-4 min-w-max">
+              {/* Header row */}
+              <div className="flex gap-4">
+                <div className="h-5 bg-gradient-to-r from-purple-900 to-purple-800 rounded w-32"></div>
+                <div className="h-5 bg-gradient-to-r from-purple-900 to-purple-800 rounded w-24"></div>
+                <div className="h-5 bg-gradient-to-r from-purple-900 to-purple-800 rounded w-48"></div>
+                <div className="h-5 bg-gradient-to-r from-purple-900 to-purple-800 rounded w-24"></div>
+                <div className="h-5 bg-gradient-to-r from-purple-900 to-purple-800 rounded w-20"></div>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
-                  Blocked Schedule
-                </h2>
-                {blockedDates.length === 0 ? (
-                  <p className="text-gray-400 text-center py-4">
-                    No blocked dates found
-                  </p>
-                ) : (
-        <div className="overflow-x-auto">
+              {/* Data rows */}
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className={`h-4 rounded w-32 ${i % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'}`}></div>
+                  <div className={`h-4 rounded w-24 ${i % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'}`}></div>
+                  <div className={`h-4 rounded w-48 ${i % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'}`}></div>
+                  <div className={`h-4 rounded w-24 ${i % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'}`}></div>
+                  <div className={`h-4 rounded w-20 ${i % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'}`}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : blockedDates.length === 0 ? (
+          <p className="text-gray-400 text-center py-4">
+            No blocked dates found
+          </p>
+        ) : (
           <table className="min-w-full divide-y divide-gray-700">
             <thead>
               <tr>
@@ -1909,11 +1949,11 @@ const handleSearch = async (e) => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-              </div>
-            </div>
-          </Tab.Panel>
+        )}
+      </div>
+    </div>
+  </div>
+</Tab.Panel>
 
           {/* Agreements Tab */}
           <Tab.Panel>
