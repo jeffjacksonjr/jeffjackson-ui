@@ -981,6 +981,7 @@ const handleUpdateBooking = async (e) => {
       status: booking.status,
       depositReceived: `$${booking.depositReceived || "0"}`,
       totalAmount: `$${booking.totalAmount || "0"}`,
+      totalAmountReceived : `$${booking.totalAmountReceived || "0"}`,
       remainingAmount: `$${booking.remainingAmount || "0"}`,
       agreementUrl: booking.agreementUrl,
       createdAt: booking.createdAt
@@ -1249,7 +1250,7 @@ const handleSearch = async (e) => {
 
     <div className="overflow-x-auto">
       {isLoading ? (
-        <TableLoader columns={13} rows={10} />
+        <TableLoader columns={14} rows={10} />
       ) : bookings.length === 0 ? (
         <div className="text-center py-8">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -1288,6 +1289,9 @@ const handleSearch = async (e) => {
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Total Amount
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Total Amount Received
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Remaining Amount
@@ -1353,6 +1357,11 @@ const handleSearch = async (e) => {
 </button>
   </div>
 </td>
+<td className="px-4 py-3 whitespace-nowrap">
+                <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
+                  {booking.totalAmountReceived}
+                </span>
+              </td>
               <td className="px-4 py-3 whitespace-nowrap">
                 <span
                   className={`px-2 py-1 text-xs rounded-full ${
@@ -1528,7 +1537,7 @@ const handleSearch = async (e) => {
               </div>
               <div className="overflow-x-auto">
       {isLoading ? (
-        <TableLoader columns={13} rows={10} />
+        <TableLoader columns={14} rows={10} />
       ) : enquiries.length === 0 ? (
         <div className="text-center py-8">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -1568,6 +1577,9 @@ const handleSearch = async (e) => {
       </th>
       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
         Ask for Deposit
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+        Total Amount Received
       </th>
       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
         Remaining Amount
@@ -1654,6 +1666,14 @@ const handleSearch = async (e) => {
             </button>
           </div>
         </td>
+
+        <td className="px-4 py-3 whitespace-nowrap">
+          <div className="flex items-center">
+            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+              ${enquiry.totalAmountReceived}
+            </span>
+            </div>
+            </td>
 
         {/* Remaining Amount (Read-only) */}
         <td className="px-4 py-3 whitespace-nowrap">

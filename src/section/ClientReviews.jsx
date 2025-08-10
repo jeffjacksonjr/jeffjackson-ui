@@ -3,7 +3,6 @@ import { getConfig } from '../config/activeConfig';
 
 export default function ClientReviews() {
   const [reviews, setReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const config = getConfig();
 
   useEffect(() => {
@@ -19,15 +18,12 @@ export default function ClientReviews() {
         setReviews(data);
       } catch (err) {
         console.error('Error fetching reviews:', err);
-        // Don't set any mock data, will show "No reviews" message
         setReviews([]);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchReviews();
-  }, [config.healthCheck]); // Added config.healthCheck as dependency
+  }, [config.healthCheck]);
 
   // Sort by rank (lower rank = higher priority) and take top 3
   const topReviews = reviews
@@ -41,12 +37,6 @@ export default function ClientReviews() {
           Client <span className="text-purple-400">Reviews</span>
         </h2>
         
-        {isLoading ? (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-          </div>
-        ) : null}
-
         <div className="max-w-4xl mx-auto">
           {topReviews.length > 0 ? (
             topReviews.map((review) => (
@@ -79,9 +69,7 @@ export default function ClientReviews() {
             ))
           ) : (
             <div className="bg-gray-800 rounded-lg p-6 text-center">
-              <p className="text-xl text-gray-400">
-                {isLoading ? '' : 'No reviews to show yet'}
-              </p>
+              <p className="text-xl text-gray-400">No reviews to show yet</p>
             </div>
           )}
         </div>
