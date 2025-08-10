@@ -19,6 +19,7 @@ import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './redux/ProtectedRoute';
 import Confirmation from './booking/Confirmation';
 import AgreementUpload from './uploadAgreement/AgreementUpload';
+import ReviewForm from './section/ReviewForm';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -64,6 +65,7 @@ function AppContent() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/upload" element={<AgreementUpload />} />
         <Route path="/confirmation" element={<Confirmation />} />
+        <Route path="/review/:uniqueId" element={<ReviewForm />} />
         <Route 
           path="/dashboard" 
           element={

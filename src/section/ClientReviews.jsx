@@ -1,41 +1,58 @@
+import { useState, useEffect } from 'react';
+import { getConfig } from '../config/activeConfig';
+
 export default function ClientReviews() {
-  const reviews = [
-    {
-      reviewId: "123456789",
-      clientName: "Daniel Walker",
-      clientFeedback: "Absolutely amazing experience! The music selection was perfect and the atmosphere was electric. Can't wait for the next event!",
-      rank: "5",
-      submitted: "true"
-    },
-    {
-      reviewId: "987654321",
-      clientName: "Sarah Smith",
-      clientFeedback: "One of the best nights out I've had in years. The DJ knew exactly how to keep the crowd moving all night long.",
-      rank: "5",
-      submitted: "true"
-    },
-    {
-      reviewId: "456123789",
-      clientName: "Mike Johnson",
-      clientFeedback: "Great venue and fantastic music. The sound system was incredible - you could feel every beat!",
-      rank: "4",
-      submitted: "true"
-    }
-  ];
+  const [reviews, setReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const config = getConfig();
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch(`${config.healthCheck}/api/public/reviews`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch reviews');
+        }
+
+        const data = await response.json();
+        setReviews(data);
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+        // Don't set any mock data, will show "No reviews" message
+        setReviews([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [config.healthCheck]); // Added config.healthCheck as dependency
+
+  // Sort by rank (lower rank = higher priority) and take top 3
+  const topReviews = reviews
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, 3);
 
   return (
-    <section id="reviews" className="py-20 bg-black text-white">
+    <section id="reviews" className="py-20 bg-black text-white h-screen">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
           Client <span className="text-purple-400">Reviews</span>
         </h2>
         
+        {isLoading ? (
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        ) : null}
+
         <div className="max-w-4xl mx-auto">
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
+          {topReviews.length > 0 ? (
+            topReviews.map((review) => (
               <div 
                 key={review.reviewId} 
-                className="bg-gray-800 rounded-lg p-6 mb-6 last:mb-0 hover:shadow-purple-500/20 shadow-lg transition duration-300"
+                className="bg-gray-800 rounded-lg p-4 mb-6 last:mb-0 hover:shadow-purple-500/20 shadow-lg transition duration-300"
               >
                 <div className="flex items-start mb-4">
                   <div className="bg-purple-500 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
@@ -47,7 +64,7 @@ export default function ClientReviews() {
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
-                          className={`w-5 h-5 ${i < review.rank ? 'text-yellow-400' : 'text-gray-600'}`}
+                          className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -62,7 +79,9 @@ export default function ClientReviews() {
             ))
           ) : (
             <div className="bg-gray-800 rounded-lg p-6 text-center">
-              <p className="text-xl text-gray-400">No reviews to show yet</p>
+              <p className="text-xl text-gray-400">
+                {isLoading ? '' : 'No reviews to show yet'}
+              </p>
             </div>
           )}
         </div>
