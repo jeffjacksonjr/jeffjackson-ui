@@ -1,0 +1,72 @@
+export default function ClientReviews() {
+  const reviews = [
+    {
+      reviewId: "123456789",
+      clientName: "Daniel Walker",
+      clientFeedback: "Absolutely amazing experience! The music selection was perfect and the atmosphere was electric. Can't wait for the next event!",
+      rank: "5",
+      submitted: "true"
+    },
+    {
+      reviewId: "987654321",
+      clientName: "Sarah Smith",
+      clientFeedback: "One of the best nights out I've had in years. The DJ knew exactly how to keep the crowd moving all night long.",
+      rank: "5",
+      submitted: "true"
+    },
+    {
+      reviewId: "456123789",
+      clientName: "Mike Johnson",
+      clientFeedback: "Great venue and fantastic music. The sound system was incredible - you could feel every beat!",
+      rank: "4",
+      submitted: "true"
+    }
+  ];
+
+  return (
+    <section id="reviews" className="py-20 bg-black text-white">
+      <div className="container mx-auto px-6">
+        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+          Client <span className="text-purple-400">Reviews</span>
+        </h2>
+        
+        <div className="max-w-4xl mx-auto">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <div 
+                key={review.reviewId} 
+                className="bg-gray-800 rounded-lg p-6 mb-6 last:mb-0 hover:shadow-purple-500/20 shadow-lg transition duration-300"
+              >
+                <div className="flex items-start mb-4">
+                  <div className="bg-purple-500 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+                    {review.clientName.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold">{review.clientName}</h4>
+                    <div className="flex items-center mt-1">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${i < review.rank ? 'text-yellow-400' : 'text-gray-600'}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-300 pl-16">{review.clientFeedback}</p>
+              </div>
+            ))
+          ) : (
+            <div className="bg-gray-800 rounded-lg p-6 text-center">
+              <p className="text-xl text-gray-400">No reviews to show yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
