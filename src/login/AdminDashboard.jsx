@@ -743,7 +743,6 @@ const handleUpdateBooking = async (e) => {
   e.preventDefault();
   
   try {
-    // Prepare the payload based on what field is being edited
     let payload = {
       uniqueId: editBookingModal.bookingId,
       type: "booking"
@@ -753,9 +752,15 @@ const handleUpdateBooking = async (e) => {
       payload.totalAmount = editBookingModal.totalAmount;
     } else if (editBookingModal.fieldToEdit === "status") {
       payload.status = editBookingModal.status;
+      
+      // Show additional toast for completed status
+      if (editBookingModal.status === "COMPLETED") {
+        toast.success("Status updated to COMPLETED. Feedback email sent to client.", {
+          duration: 5000
+        });
+      }
     }
 
-    // Make the PATCH request to the booking endpoint
     const response = await api.patch(`${config.bookingEndpoint}`, payload);
 
     if (response.data.status === "Fail") {
@@ -809,10 +814,9 @@ const handleUpdateBooking = async (e) => {
   e.preventDefault();
   
   try {
-    // Prepare the payload based on what field is being edited
     let payload = {
       uniqueId: editAmountModal.bookingId,
-      type: "enquiry" // This is always "enquiry" for this use case
+      type: "enquiry"
     };
 
     if (editAmountModal.fieldToEdit === "deposit") {
@@ -821,9 +825,15 @@ const handleUpdateBooking = async (e) => {
       payload.totalAmount = editAmountModal.totalAmount;
     } else if (editAmountModal.fieldToEdit === "status") {
       payload.status = editAmountModal.status;
+      
+      // Show additional toast for finalized status
+      if (editAmountModal.status === "FINALIZED") {
+        toast.success("Status updated to FINALIZED. Feedback email sent to client.", {
+          duration: 5000
+        });
+      }
     }
 
-    // Make the PATCH request
     const response = await api.patch(`${config.enquiryEndpoint}`, payload);
 
     if (response.data.status === "Fail") {
@@ -2378,7 +2388,7 @@ const handleSearch = async (e) => {
           </div>
         )}
 
-        {editAmountModal.fieldToEdit === "status" && (
+{editAmountModal.fieldToEdit === "status" && (
   <div>
     <label className="block text-sm font-medium mb-1">
       Status
@@ -2400,33 +2410,16 @@ const handleSearch = async (e) => {
       <option value="ON_HOLD">On Hold</option>
       <option value="FINALIZED">Finalized</option>
     </select>
+    
+    {/* Add this warning message */}
+    {editAmountModal.status === "FINALIZED" && (
+      <div className="mt-2 p-2 bg-yellow-900 text-yellow-100 rounded text-sm">
+        Warning: A feedback mail has been sent to the client. Be sure before making it Finalized.
+      </div>
+    )}
   </div>
 )}
 
-{editAmountModal.fieldToEdit === "bookingStatus" && (
-  <div>
-    <h3 className="text-lg font-bold mb-4">Update Status</h3>
-    <label className="block text-sm font-medium mb-1">Status</label>
-    <select
-      value={editAmountModal.status}
-      onChange={(e) =>
-        setEditAmountModal({
-          ...editAmountModal,
-          status: e.target.value
-        })
-      }
-      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-      required
-    >
-      <option value="PENDING">PENDING</option>
-      <option value="CONFIRMED">CONFIRMED</option>
-      <option value="CANCELLED">CANCELLED</option>
-      <option value="COMPLETED">COMPLETED</option>
-      <option value="NO_SHOW">NO_SHOW</option>
-      <option value="REFUNDED">REFUNDED</option>
-    </select>
-  </div>
-)}
 
         {(editAmountModal.fieldToEdit === "deposit" || 
           editAmountModal.fieldToEdit === "total") && (
@@ -2505,30 +2498,37 @@ const handleSearch = async (e) => {
         )}
 
         {editBookingModal.fieldToEdit === "status" && (
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Status
-            </label>
-            <select
-              value={editBookingModal.status}
-              onChange={(e) =>
-                setEditBookingModal({
-                  ...editBookingModal,
-                  status: e.target.value,
-                })
-              }
-              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-              required
-            >
-              <option value="PENDING">PENDING</option>
-              <option value="CONFIRMED">CONFIRMED</option>
-              <option value="CANCELLED">CANCELLED</option>
-              <option value="COMPLETED">COMPLETED</option>
-              <option value="NO_SHOW">NO SHOW</option>
-              <option value="REFUNDED">REFUNDED</option>
-            </select>
-          </div>
-        )}
+  <div>
+    <label className="block text-sm font-medium mb-1">
+      Status
+    </label>
+    <select
+      value={editBookingModal.status}
+      onChange={(e) =>
+        setEditBookingModal({
+          ...editBookingModal,
+          status: e.target.value,
+        })
+      }
+      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+      required
+    >
+      <option value="PENDING">PENDING</option>
+      <option value="CONFIRMED">CONFIRMED</option>
+      <option value="CANCELLED">CANCELLED</option>
+      <option value="COMPLETED">COMPLETED</option>
+      <option value="NO_SHOW">NO SHOW</option>
+      <option value="REFUNDED">REFUNDED</option>
+    </select>
+    
+    {/* Add this warning message */}
+    {editBookingModal.status === "COMPLETED" && (
+      <div className="mt-2 p-2 bg-yellow-900 text-yellow-100 rounded text-sm">
+        Warning: A feedback mail has been sent to the client. Be sure before marking as Completed.
+      </div>
+    )}
+  </div>
+)}
 
         <div className="flex justify-end space-x-4">
           <button
