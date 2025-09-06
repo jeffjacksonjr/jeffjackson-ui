@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../redux/authSlice'
+import { logout, checkAuth } from '../redux/authSlice'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,6 +19,10 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
+  // Check authentication status on component mount
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
   
 const navLinks = [
   { name: 'Home', href: '#home' },
@@ -26,7 +30,7 @@ const navLinks = [
   { name: 'Gallery', href: '#gallery' },
   { name: 'Enquiry', href: '#contact' },
   { name: 'Upload', href: '/upload' },
-  { name: 'Payment', href: '/payment' },
+  // { name: 'Payment', href: '/payment' }, // Uncomment if payment link is needed
   ...(isAuthenticated 
     ? [
         { name: 'Dashboard', href: '/dashboard' },
