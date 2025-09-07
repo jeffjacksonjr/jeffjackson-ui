@@ -1732,7 +1732,7 @@ const handleSearch = async (e) => {
         ? "bg-green-900 text-green-300"
         : enquiry.status === "ON_HOLD"
         ? "bg-yellow-900 text-yellow-300"
-        : enquiry.status === "IN_PROGRESS"
+        : enquiry.status === "IN_PROGRESS" || enquiry.status === "PENDING_DEPOSIT"
         ? "bg-blue-900 text-blue-300"
         : "bg-gray-700 text-gray-300" // OPENED
     }`}
@@ -2400,8 +2400,8 @@ const handleSearch = async (e) => {
     <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
       <h3 className="text-lg font-bold mb-4">
         {editAmountModal.fieldToEdit === "deposit" && "Edit Ask for Deposit"}
-        {editAmountModal.fieldToEdit === "total" && "Edit Total Amount"}
-        {editAmountModal.fieldToEdit === "status" && "Update Status"}
+        {editAmountModal.fieldToEdit === "total" && "Edit Enquiry Total Amount"}
+        {editAmountModal.fieldToEdit === "status" && "Update Enquiry Status"}
       </h3>
       <form onSubmit={handleUpdateAmount} className="space-y-4">
         {editAmountModal.fieldToEdit === "deposit" && (
@@ -2463,6 +2463,7 @@ const handleSearch = async (e) => {
       <option value="">Select status</option>
       <option value="OPENED">Opened</option>
       <option value="IN_PROGRESS">In Progress</option>
+      <option value="PENDING_DEPOSIT">Pending Deposit</option>
       <option value="ON_HOLD">On Hold</option>
       <option value="FINALIZED">Finalized</option>
     </select>
