@@ -2,7 +2,6 @@ import { Route, Routes } from 'react-router-dom';
 import Navbar from "./navbar/Navbar";
 import Footer from "./section/Footer";
 import Home from './home/Home';
-import BookingWizard from './booking/BookingWizard'
 import LoginPage from './login/LoginPage'
 import AdminDashboard from './login/AdminDashboard';
 // import PaymentLookup from './payment/PaymentLookup';
@@ -20,6 +19,7 @@ import ProtectedRoute from './redux/ProtectedRoute';
 import Confirmation from './booking/Confirmation';
 import AgreementUpload from './uploadAgreement/AgreementUpload';
 import ReviewForm from './section/ReviewForm';
+import BookingWizardPayPal from './booking/BookingWizardPayPal';
 // import PayStatus from './payment/PayStatus';
 
 function AppContent() {
@@ -62,7 +62,7 @@ function AppContent() {
       <Routes>
         <Route path= "*" element={<Home/>}/>
         <Route path= "/" element={<Home/>}/>
-        <Route path="/book-now" element={<BookingWizard/>} />
+        <Route path="/book-now" element={<BookingWizardPayPal/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/upload" element={<AgreementUpload />} />
         <Route path="/confirmation" element={<Confirmation />} />

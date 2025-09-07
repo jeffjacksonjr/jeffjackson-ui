@@ -7,5 +7,6 @@
     "viewAgreementEndpoint":"https://jeffjackson-test.onrender.com/api/viewAgreement",
     "submitEnquiryEndpoint":"https://jeffjackson-test.onrender.com/api/public/enquiries",
     "submitBookingEndpoint":"https://jeffjackson-test.onrender.com/api/public/bookings",
-    "bookingEndpoint":"https://jeffjackson-test.onrender.com/api/bookings"
+    "bookingEndpoint":"https://jeffjackson-test.onrender.com/api/bookings",
+    "localTestEndpoint":"http://localhost:1526"
 }
