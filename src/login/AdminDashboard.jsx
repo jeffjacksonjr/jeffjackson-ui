@@ -750,6 +750,8 @@ const handleUpdateBooking = async (e) => {
 
     if (editBookingModal.fieldToEdit === "totalAmount") {
       payload.totalAmount = editBookingModal.totalAmount;
+    } else if (editBookingModal.fieldToEdit === "totalAmountReceived") {
+      payload.totalAmountReceived = editBookingModal.totalAmountReceived;
     } else if (editBookingModal.fieldToEdit === "status") {
       payload.status = editBookingModal.status;
       
@@ -775,10 +777,19 @@ const handleUpdateBooking = async (e) => {
           const updatedBooking = { ...booking };
           
           if (editBookingModal.fieldToEdit === "totalAmount") {
-            updatedBooking.totalAmount = `$${editBookingModal.totalAmount}`;
-            // Recalculate remaining amount
-            const depositAmount = parseInt(booking.depositReceived.replace(/\D/g, "") || 0);
-            updatedBooking.remainingAmount = `$${parseInt(editBookingModal.totalAmount) - depositAmount}`;
+            const newTotalAmount = parseInt(editBookingModal.totalAmount) || 0;
+            const currentTotalAmountReceived = parseInt(booking.totalAmountReceived.replace(/\D/g, "") || "0") || 0;
+            
+            updatedBooking.totalAmount = `$${newTotalAmount}`;
+            updatedBooking.remainingAmount = `$${newTotalAmount - currentTotalAmountReceived}`;
+            
+          } else if (editBookingModal.fieldToEdit === "totalAmountReceived") {
+            const newTotalAmountReceived = parseInt(editBookingModal.totalAmountReceived) || 0;
+            const currentTotalAmount = parseInt(booking.totalAmount.replace(/\D/g, "") || "0") || 0;
+            
+            updatedBooking.totalAmountReceived = `$${newTotalAmountReceived}`;
+            updatedBooking.remainingAmount = `$${currentTotalAmount - newTotalAmountReceived}`;
+            
           } else if (editBookingModal.fieldToEdit === "status") {
             updatedBooking.status = editBookingModal.status;
           }
@@ -797,6 +808,7 @@ const handleUpdateBooking = async (e) => {
       bookingId: null,
       fieldToEdit: null,
       totalAmount: "",
+      totalAmountReceived: "",
       status: ""
     });
 
@@ -983,6 +995,7 @@ const handleUpdateBooking = async (e) => {
       totalAmount: `$${booking.totalAmount || "0"}`,
       totalAmountReceived : `$${booking.totalAmountReceived || "0"}`,
       remainingAmount: `$${booking.remainingAmount || "0"}`,
+      paypalTransactionId: booking.paypalTransactionId || "-",
       agreementUrl: booking.agreementUrl,
       createdAt: booking.createdAt
     }));
@@ -1297,6 +1310,9 @@ const handleSearch = async (e) => {
               Remaining Amount
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            PayPal Transaction ID
+          </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Status
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -1357,10 +1373,27 @@ const handleSearch = async (e) => {
 </button>
   </div>
 </td>
-<td className="px-4 py-3 whitespace-nowrap">
-                <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
-                  {booking.totalAmountReceived}
-                </span>
+
+              <td className="px-4 py-3 whitespace-nowrap">
+                <div className="flex items-center">
+                  <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+                    {booking.totalAmountReceived}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setEditBookingModal({
+                        isOpen: true,
+                        bookingId: booking.uniqueId,
+                        fieldToEdit: "totalAmountReceived",
+                        totalAmountReceived: booking.totalAmountReceived.replace(/\D/g, ""),
+                        status: booking.status
+                      })
+                    }
+                    className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+                  >
+                    Edit
+                  </button>
+                </div>
               </td>
               <td className="px-4 py-3 whitespace-nowrap">
                 <span
@@ -1373,6 +1406,9 @@ const handleSearch = async (e) => {
                   {booking.remainingAmount}
                 </span>
               </td>
+              <td className="px-4 py-3 whitespace-nowrap">
+              {booking.paypalTransactionId || "-"}
+            </td>
               <td className="px-4 py-3 whitespace-nowrap">
   <div className="flex items-center">
     <span className={`px-2 py-1 text-xs rounded-full ${
@@ -2434,7 +2470,7 @@ const handleSearch = async (e) => {
     {/* Add this warning message */}
     {editAmountModal.status === "FINALIZED" && (
       <div className="mt-2 p-2 bg-yellow-900 text-yellow-100 rounded text-sm">
-        Warning: A feedback mail has been sent to the client. Be sure before making it Finalized.
+        Warning: A feedback request email will be sent to the client. Review carefully before confirming.
       </div>
     )}
   </div>
@@ -2495,6 +2531,7 @@ const handleSearch = async (e) => {
       <h3 className="text-lg font-bold mb-4">
         {editBookingModal.fieldToEdit === "totalAmount" && "Edit Booking Total Amount"}
         {editBookingModal.fieldToEdit === "status" && "Update Booking Status"}
+        {editBookingModal.fieldToEdit === "totalAmountReceived" && "Update Total Amount Received"}
       </h3>
       <form onSubmit={handleUpdateBooking} className="space-y-4">
         {editBookingModal.fieldToEdit === "totalAmount" && (
@@ -2509,6 +2546,26 @@ const handleSearch = async (e) => {
                 setEditBookingModal({
                   ...editBookingModal,
                   totalAmount: e.target.value,
+                })
+              }
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+              required
+            />
+          </div>
+        )}
+
+        {editBookingModal.fieldToEdit === "totalAmountReceived" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Total Amount Received ($)
+            </label>
+            <input
+              type="number"
+              value={editBookingModal.totalAmountReceived}
+              onChange={(e) =>
+                setEditBookingModal({
+                  ...editBookingModal,
+                  totalAmountReceived: e.target.value,
                 })
               }
               className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
@@ -2544,7 +2601,7 @@ const handleSearch = async (e) => {
     {/* Add this warning message */}
     {editBookingModal.status === "COMPLETED" && (
       <div className="mt-2 p-2 bg-yellow-900 text-yellow-100 rounded text-sm">
-        Warning: A feedback mail has been sent to the client. Be sure before marking as Completed.
+        Warning: A feedback request email will be sent to the client. Review carefully before confirming.
       </div>
     )}
   </div>

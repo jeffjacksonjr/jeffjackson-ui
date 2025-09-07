@@ -4,7 +4,6 @@ import Footer from "./section/Footer";
 import Home from './home/Home';
 import LoginPage from './login/LoginPage'
 import AdminDashboard from './login/AdminDashboard';
-// import PaymentLookup from './payment/PaymentLookup';
 import ScrollToTop from './utils/ScrollToTop';
 import { useEffect } from 'react';
 import axios from 'axios';
@@ -20,7 +19,6 @@ import Confirmation from './booking/Confirmation';
 import AgreementUpload from './uploadAgreement/AgreementUpload';
 import ReviewForm from './section/ReviewForm';
 import BookingWizardPayPal from './booking/BookingWizardPayPal';
-// import PayStatus from './payment/PayStatus';
 
 function AppContent() {
   const dispatch = useDispatch();

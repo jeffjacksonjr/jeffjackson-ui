@@ -10,6 +10,8 @@ export default function PayPalCheckoutStep({ date, time, clientDetails, onBack, 
   const [showPayPalModal, setShowPayPalModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [message, setMessage] = useState('');
+  const [showMessage, setShowMessage] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -39,8 +41,15 @@ export default function PayPalCheckoutStep({ date, time, clientDetails, onBack, 
 
       const data = await response.json();
       
-      if (!response.ok || data.status === 'error') {
-        throw new Error(data.message || 'Failed to check booking availability');
+      if (data.status === 'error') {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        setShowMessage(true);
+        setMessage(data.message + ". Please check your email for existing booking details.");
+        toast.error("Booking already exist!!" || 'Failed to create booking');
+        return;
       }
 
       return true; // Booking is available
@@ -160,6 +169,11 @@ export default function PayPalCheckoutStep({ date, time, clientDetails, onBack, 
       </button>
 
       <h2 className="text-2xl font-bold mb-6">Complete Your Booking</h2>
+
+      {showMessage && 
+        (<div className="text-red-500 rounded-lg mb-6">
+          <p>{message} </p>
+          </div>)}
 
       {/* Booking details display */}
       <div className="mb-8">
