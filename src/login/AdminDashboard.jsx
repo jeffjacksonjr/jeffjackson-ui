@@ -171,11 +171,10 @@ function AgreementModal({ booking, onClose, onSend }) {
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [nonRefundableDeposit, setNonRefundableDeposit] = useState(true);
 
-  // Calculate remaining balance safely
-  const depositAmount =
-    parseInt(booking.depositReceived?.replace(/\D/g, "")) || 0;
+  // Calculate remaining balance correctly: totalAmount - totalAmountReceived
+  const totalAmountReceived = parseInt(booking.totalAmountReceived?.replace(/\D/g, "")) || 0;
   const remainingBalance = agreementAmount
-    ? agreementAmount - depositAmount
+    ? agreementAmount - totalAmountReceived
     : 0;
 
   const handleAmountChange = (e) => {
@@ -260,37 +259,37 @@ function AgreementModal({ booking, onClose, onSend }) {
       doc.setTextColor(0, 0, 0); // Reset to black
 
       // Client Details Section
-checkPageBreak(90);
-addSectionBackground(yPos, 90, COLORS.GRAY_800);
+      checkPageBreak(90);
+      addSectionBackground(yPos, 90, COLORS.GRAY_800);
 
-doc.setFontSize(14);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(255, 255, 255);
-doc.text("CLIENT DETAILS", margin, yPos + 5);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text("CLIENT DETAILS", margin, yPos + 5);
 
-yPos += 20;
-doc.setFontSize(10);
-doc.setFont("helvetica", "normal");
+      yPos += 20;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
 
-// Two column layout for client details
-const leftCol = margin + 5;
-const rightCol = pageWidth / 2 + 10;
+      // Two column layout for client details
+      const leftCol = margin + 5;
+      const rightCol = pageWidth / 2 + 10;
 
-// Add ID field (either booking ID or enquiry ID)
-doc.text(`ID: ${booking.id}`, leftCol, yPos);
-yPos += 12;  // Move down for the next field
+      // Add ID field (either booking ID or enquiry ID)
+      doc.text(`ID: ${booking.id}`, leftCol, yPos);
+      yPos += 12;  // Move down for the next field
 
-doc.text(`Client Name: ${booking.clientName}`, leftCol, yPos);
-doc.text(`Phone: ${booking.phone}`, rightCol, yPos);
-yPos += 12;
+      doc.text(`Client Name: ${booking.clientName}`, leftCol, yPos);
+      doc.text(`Phone: ${booking.phone}`, rightCol, yPos);
+      yPos += 12;
 
-doc.text(`Event Date: ${formatDate(booking.eventDate)}`, leftCol, yPos);
-doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
-yPos += 12;
+      doc.text(`Event Date: ${formatDate(booking.eventDate)}`, leftCol, yPos);
+      doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
+      yPos += 12;
 
-doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
-doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
-yPos += 12;
+      doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
+      doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
+      yPos += 12;
 
       // Address spans full width
       const addressText = `Event Location: ${booking.address}`;
@@ -382,7 +381,7 @@ yPos += 12;
       const col3 = margin + 135;
 
       doc.text(`Agreement Total: $${agreementAmount}`, col1, yPos);
-      doc.text(`Deposit: ${booking.depositReceived}`, col2, yPos);
+      doc.text(`Total Amount Received: $${totalAmountReceived}`, col2, yPos);
       doc.text(`Balance: $${remainingBalance}`, col3, yPos);
 
       yPos += 35;
@@ -433,19 +432,19 @@ yPos += 12;
       yPos += 15;
 
       if (nonRefundableDeposit) {
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(255, 0, 0); // Red color for emphasis
-      yPos += addWrappedText(
-        doc,
-        "NOTE: Deposits are NON-REFUNDABLE",
-        margin + 5,
-        yPos,
-        pageWidth - 2 * margin - 10,
-        10
-      );
-      doc.setTextColor(0, 0, 0); // Reset to black
-    }
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(255, 0, 0); // Red color for emphasis
+        yPos += addWrappedText(
+          doc,
+          "NOTE: Deposits are NON-REFUNDABLE",
+          margin + 5,
+          yPos,
+          pageWidth - 2 * margin - 10,
+          10
+        );
+        doc.setTextColor(0, 0, 0); // Reset to black
+      }
 
       // Signatures Section
       checkPageBreak(80);
@@ -579,14 +578,14 @@ yPos += 12;
                   />
                 </div>
 
-                {/* Deposit Received (readonly) */}
+                {/* Total Amount Received (readonly) */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Deposit
+                    Total Amount Received
                   </label>
                   <input
                     type="text"
-                    value={booking.depositReceived || booking.amount}
+                    value={`$${totalAmountReceived}`}
                     readOnly
                     className="w-full text-purple-400 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
                   />
@@ -632,7 +631,6 @@ yPos += 12;
                   Deposits are non-refundable
                 </label>
               </div>
-
 
               {/* Event End Time Field */}
               <div>
@@ -821,8 +819,8 @@ const handleUpdateBooking = async (e) => {
   }
 };
 
-  // Add this function to handle amount updates
-  const handleUpdateAmount = async (e) => {
+
+const handleUpdateAmount = async (e) => {
   e.preventDefault();
   
   try {
@@ -835,6 +833,8 @@ const handleUpdateBooking = async (e) => {
       payload.depositReceived = editAmountModal.depositReceived;
     } else if (editAmountModal.fieldToEdit === "total") {
       payload.totalAmount = editAmountModal.totalAmount;
+    } else if (editAmountModal.fieldToEdit === "totalAmountReceived") {
+      payload.totalAmountReceived = editAmountModal.totalAmountReceived;
     } else if (editAmountModal.fieldToEdit === "status") {
       payload.status = editAmountModal.status;
       
@@ -863,16 +863,19 @@ const handleUpdateBooking = async (e) => {
             updatedEnquiry.depositReceived = editAmountModal.depositReceived;
           } else if (editAmountModal.fieldToEdit === "total") {
             updatedEnquiry.totalAmount = editAmountModal.totalAmount;
+          } else if (editAmountModal.fieldToEdit === "totalAmountReceived") {
+            updatedEnquiry.totalAmountReceived = editAmountModal.totalAmountReceived;
           } else if (editAmountModal.fieldToEdit === "status") {
             updatedEnquiry.status = editAmountModal.status;
           }
 
-          // Recalculate remaining amount if deposit or total was updated
+          // Recalculate remaining amount if deposit, total, or totalAmountReceived was updated
           if (editAmountModal.fieldToEdit === "deposit" || 
-              editAmountModal.fieldToEdit === "total") {
-            updatedEnquiry.remainingAmount = 
-              parseInt(updatedEnquiry.totalAmount || 0) - 
-              parseInt(updatedEnquiry.depositReceived || 0);
+              editAmountModal.fieldToEdit === "total" ||
+              editAmountModal.fieldToEdit === "totalAmountReceived") {
+            const total = parseInt(updatedEnquiry.totalAmount || "0");
+            const received = parseInt(updatedEnquiry.totalAmountReceived || "0");
+            updatedEnquiry.remainingAmount = (total - received).toString();
           }
 
           return updatedEnquiry;
@@ -890,6 +893,7 @@ const handleUpdateBooking = async (e) => {
       fieldToEdit: null,
       totalAmount: "",
       depositReceived: "",
+      totalAmountReceived: "",
       status: ""
     });
 
@@ -1704,12 +1708,27 @@ const handleSearch = async (e) => {
         </td>
 
         <td className="px-4 py-3 whitespace-nowrap">
-          <div className="flex items-center">
-            <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
-              ${enquiry.totalAmountReceived}
-            </span>
-            </div>
-            </td>
+  <div className="flex items-center">
+    <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300 mr-2">
+      ${enquiry.totalAmountReceived || "0"}
+    </span>
+    <button
+      onClick={() =>
+        setEditAmountModal({
+          isOpen: true,
+          bookingId: enquiry.uniqueId,
+          fieldToEdit: "totalAmountReceived",
+          totalAmountReceived: enquiry.totalAmountReceived || "0",
+          totalAmount: enquiry.totalAmount || "0",
+          depositReceived: enquiry.depositReceived || "0"
+        })
+      }
+      className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-3 py-1 rounded-full text-xs"
+    >
+      Edit
+    </button>
+  </div>
+</td>
 
         {/* Remaining Amount (Read-only) */}
         <td className="px-4 py-3 whitespace-nowrap">
@@ -2402,6 +2421,7 @@ const handleSearch = async (e) => {
         {editAmountModal.fieldToEdit === "deposit" && "Edit Ask for Deposit"}
         {editAmountModal.fieldToEdit === "total" && "Edit Enquiry Total Amount"}
         {editAmountModal.fieldToEdit === "status" && "Update Enquiry Status"}
+        {editAmountModal.fieldToEdit === "totalAmountReceived" && "Edit Total Amount Received"}
       </h3>
       <form onSubmit={handleUpdateAmount} className="space-y-4">
         {editAmountModal.fieldToEdit === "deposit" && (
@@ -2478,7 +2498,28 @@ const handleSearch = async (e) => {
 )}
 
 
-        {(editAmountModal.fieldToEdit === "deposit" || 
+{editAmountModal.fieldToEdit === "totalAmountReceived" && (
+  <div>
+    <label className="block text-sm font-medium mb-1">
+      Total Amount Received ($)
+    </label>
+    <input
+      type="number"
+      value={editAmountModal.totalAmountReceived}
+      onChange={(e) =>
+        setEditAmountModal({
+          ...editAmountModal,
+          totalAmountReceived: e.target.value,
+        })
+      }
+      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
+      required
+    />
+  </div>
+)}
+
+
+        {/* {(editAmountModal.fieldToEdit === "deposit" || 
           editAmountModal.fieldToEdit === "total") && (
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -2494,7 +2535,7 @@ const handleSearch = async (e) => {
               className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
             />
           </div>
-        )}
+        )} */}
 
         <div className="flex justify-end space-x-4">
           <button
