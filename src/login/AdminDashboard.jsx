@@ -173,6 +173,7 @@ function AgreementModal({ booking, onClose, onSend }) {
 
   // Calculate remaining balance correctly: totalAmount - totalAmountReceived
   const totalAmountReceived = parseInt(booking.totalAmountReceived?.replace(/\D/g, "")) || 0;
+  // const depositAmount = parseInt(booking.depositReceived?.replace(/\D/g, "")) || 0;
   const remainingBalance = agreementAmount
     ? agreementAmount - totalAmountReceived
     : 0;
@@ -381,7 +382,7 @@ function AgreementModal({ booking, onClose, onSend }) {
       const col3 = margin + 135;
 
       doc.text(`Agreement Total: $${agreementAmount}`, col1, yPos);
-      doc.text(`Total Amount Received: $${totalAmountReceived}`, col2, yPos);
+      doc.text(`Deposit: ${booking.depositReceived}`, col2, yPos);
       doc.text(`Balance: $${remainingBalance}`, col3, yPos);
 
       yPos += 35;
@@ -578,14 +579,14 @@ function AgreementModal({ booking, onClose, onSend }) {
                   />
                 </div>
 
-                {/* Total Amount Received (readonly) */}
+                {/* Deposit Received (readonly) */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Total Amount Received
+                    Deposit
                   </label>
                   <input
                     type="text"
-                    value={`$${totalAmountReceived}`}
+                    value={booking.depositReceived || booking.amount}
                     readOnly
                     className="w-full text-purple-400 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 cursor-not-allowed"
                   />
