@@ -27,6 +27,30 @@ export default function PayPalCheckoutStep({ date, time, clientDetails, onBack, 
     const formattedDate = formatDate(date);
     
     try {
+      const availabilityResponse = await fetch(config.healthCheck + "/api/public/blockSchedule/check-availability", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        date: formattedDate,
+        time: time
+      }),
+    });
+
+    const availabilityData = await availabilityResponse.json();
+    
+    if (!availabilityResponse.ok || availabilityData.status === 'error') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      setShowMessage(true);
+      setMessage(availabilityData.message || "This time slot is not available. Please choose a different time.");
+      toast.error("Slot not available!!" || 'Failed to check availability');
+      return false;
+    }
+
       const response = await fetch(config.submitBookingEndpoint + "/check-availability", {
         method: 'POST',
         headers: {
