@@ -1653,7 +1653,7 @@ const handleSearch = async (e) => {
           {enquiry.eventType}
         </td>
         <td className="px-4 py-3 whitespace-normal">
-          {enquiry.eventDate} at {enquiry.eventTime}
+          {formatBookingDate(enquiry.eventDate)} at {enquiry.eventTime}
         </td>
         <td className="px-4 py-3 whitespace-normal">
           {enquiry.address}
@@ -2495,6 +2495,21 @@ const handleSearch = async (e) => {
         Warning: A feedback request email will be sent to the client. Review carefully before confirming.
       </div>
     )}
+    {editAmountModal.status === "Pending_Deposit" && (
+      <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
+        Info: Update status to "Pending Deposit" when awaiting client deposit payment.
+      </div>
+    )}
+    {editAmountModal.status === "IN_PROGRESS" && (
+      <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
+        Info: Update status to "In Progress" when the booking is actively being worked on. Generally after deposit is received.
+      </div>
+    )}
+    {editAmountModal.status === "ON_HOLD" && (
+      <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
+        Info: Update status to "On Hold" if the booking is temporarily paused or awaiting further information.
+      </div>
+    )}
   </div>
 )}
 
@@ -2647,6 +2662,29 @@ const handleSearch = async (e) => {
         Warning: A feedback request email will be sent to the client. Review carefully before confirming.
       </div>
     )}
+
+    {editBookingModal.status === "CANCELLED" && (
+      <div className="mt-2 p-2 bg-red-900 text-white-100 rounded text-sm">
+        Warning: A email will be sent to the client. Review carefully before confirming.
+      </div>
+    )}
+
+    {editBookingModal.status === "CONFIRMED" && (
+      <div className="mt-2 p-2 bg-green-900 text-white-100 rounded text-sm">
+        Warning: A confirmation email will be sent to the client. Review carefully before confirming.
+      </div>
+    )}
+    {editBookingModal.status === "NO_SHOW" && (
+      <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
+        Info: No email will be sent to the client. This is for record-keeping purposes only.
+      </div>
+    )}
+    {editBookingModal.status === "REFUNDED" && (
+      <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
+        Info: No email will be sent to the client. This is for record-keeping purposes only.
+      </div>
+    )}
+
   </div>
 )}
 
