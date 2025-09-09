@@ -2495,7 +2495,7 @@ const handleSearch = async (e) => {
         Warning: A feedback request email will be sent to the client. Review carefully before confirming.
       </div>
     )}
-    {editAmountModal.status === "Pending_Deposit" && (
+    {editAmountModal.status === "PENDING_DEPOSIT" && (
       <div className="mt-2 p-2 bg-purple-900 text-white-100 rounded text-sm">
         Info: Update status to "Pending Deposit" when awaiting client deposit payment.
       </div>
