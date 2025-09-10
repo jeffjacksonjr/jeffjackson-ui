@@ -188,12 +188,44 @@ function AgreementModal({ booking, onClose, onSend }) {
 
   // Helper function to format dates consistently
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  try {
+    let dateObj;
+    
+    if (typeof date === 'string') {
+      // Handle MM-DD-YYYY format specifically
+      if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(date)) {
+        const [month, day, year] = date.split('-');
+        dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } 
+      // Handle YYYY-MM-DD format
+      else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) {
+        const [year, month, day] = date.split('-');
+        dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      // Fallback to native parsing
+      else {
+        dateObj = new Date(date);
+      }
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      return "Invalid Date";
+    }
+    
+    if (isNaN(dateObj.getTime())) {
+      return "Invalid Date";
+    }
+    
+    return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
+  } catch (error) {
+    console.error("Error formatting date:", error, date);
+    return "Invalid Date";
+  }
+};
 
   // Helper function to add wrapped text and return height used
   const addWrappedText = (doc, text, x, y, maxWidth, lineHeight = 10) => {
