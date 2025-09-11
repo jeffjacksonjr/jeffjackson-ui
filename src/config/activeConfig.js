@@ -1,6 +1,7 @@
 import config from './config.json';
 import prodConfig from './prodConfig.json';
 import testConfig from './testConfig.json';
+import local from './local.json';
 
 export const getConfig = () => {
     // Use environment variable first, then fallback to config.json
@@ -11,6 +12,8 @@ export const getConfig = () => {
             return prodConfig;
         case 'test':
             return testConfig;
+        case 'local':
+            return local;
         default:
             throw new Error(`Invalid environment specified: ${env}`);
     }

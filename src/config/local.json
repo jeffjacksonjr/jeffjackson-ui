@@ -1,0 +1,12 @@
+{
+    "healthCheck":"http://localhost:1526",
+    "loginEndpoint":"http://localhost:1526/api/login",
+    "blockScheduleEndpoint":"http://localhost:1526/api/blockSchedule",
+    "enquiryEndpoint":"http://localhost:1526/api/enquiries",
+    "sendDenialEmailEndpoint":"http://localhost:1526/api/enquiries/sendDenialEmail",
+    "viewAgreementEndpoint":"http://localhost:1526/api/viewAgreement",
+    "submitEnquiryEndpoint":"http://localhost:1526/api/public/enquiries",
+    "submitBookingEndpoint":"http://localhost:1526/api/public/bookings",
+    "bookingEndpoint":"http://localhost:1526/api/bookings",
+    "localTestEndpoint":"http://localhost:1526/api/bookings"
+}

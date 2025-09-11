@@ -451,10 +451,10 @@ export default function ContactForm() {
                 <div>
                   <h4 className="font-bold">Email</h4>
                   <a
-                    href="mailto:jefferyj829@yahoo.com"
+                    href="mailto:djjeffjackson@gmail.com"
                     className="text-purple-400 hover:underline"
                   >
-                    jefferyj829@yahoo.com
+                    djjeffjackson@gmail.com
                   </a>
                 </div>
               </div>

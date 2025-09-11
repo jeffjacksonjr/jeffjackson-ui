@@ -317,11 +317,12 @@ function AgreementModal({ booking, onClose, onSend }) {
       yPos += 12;
 
       doc.text(`Event Date: ${formatDate(booking.eventDate)}`, leftCol, yPos);
-      doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
+      // doc.text(`Event Start Time: ${booking.eventTime}`, rightCol, yPos);
+      doc.text(`Event Duration: ${eventEndTime}`, rightCol, yPos);
       yPos += 12;
 
-      doc.text(`Event End Time: ${eventEndTime}`, leftCol, yPos);
-      doc.text(`Type of Event: ${booking.eventType}`, rightCol, yPos);
+      // doc.text(`Event Duration: ${eventEndTime}`, leftCol, yPos);
+      doc.text(`Type of Event: ${booking.eventType}`, leftCol, yPos);
       yPos += 12;
 
       // Address spans full width
@@ -668,14 +669,14 @@ function AgreementModal({ booking, onClose, onSend }) {
               {/* Event End Time Field */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Event End Time
+                  Event Duration
                 </label>
                 <input
                   type="text"
                   value={eventEndTime}
                   onChange={(e) => setEventEndTime(e.target.value)}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2"
-                  placeholder="Enter time i.e. 11:00 PM"
+                  placeholder="Enter event duration i.e. 09:00PM - 11:00 PM"
                   required
                 />
               </div>
