@@ -3,7 +3,7 @@ import Navbar from "./navbar/Navbar";
 import Footer from "./section/Footer";
 import Home from './home/Home';
 import LoginPage from './login/LoginPage'
-import AdminDashboard from './login/AdminDashboard';
+// import AdminDashboard from './login/AdminDashboard';
 import ScrollToTop from './utils/ScrollToTop';
 import { useEffect } from 'react';
 import axios from 'axios';
@@ -15,10 +15,11 @@ import { setChecking, setConnected, setDisconnected } from './redux/systemStatus
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './redux/ProtectedRoute';
-import Confirmation from './booking/Confirmation';
+// import Confirmation from './booking/Confirmation';
 import AgreementUpload from './uploadAgreement/AgreementUpload';
 import ReviewForm from './section/ReviewForm';
-import BookingWizardPayPal from './booking/BookingWizardPayPal';
+import NewAdminDashboard from './login/NewAdminDashboard';
+// import BookingWizardPayPal from './booking/BookingWizardPayPal';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -60,17 +61,17 @@ function AppContent() {
       <Routes>
         <Route path= "*" element={<Home/>}/>
         <Route path= "/" element={<Home/>}/>
-        <Route path="/book-now" element={<BookingWizardPayPal/>} />
+        {/* <Route path="/book-now" element={<BookingWizardPayPal/>} /> */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/upload" element={<AgreementUpload />} />
-        <Route path="/confirmation" element={<Confirmation />} />
+        {/* <Route path="/confirmation" element={<Confirmation />} /> */}
         {/* <Route path="/payStatus" element={<PayStatus/>} /> */}
         <Route path="/review/:uniqueId" element={<ReviewForm />} />
         <Route 
           path="/dashboard" 
           element={
             <ProtectedRoute>
-              <AdminDashboard/>
+              <NewAdminDashboard/>
             </ProtectedRoute>
           } 
         />

@@ -72,13 +72,13 @@ export default function HeroSection() {
           >
             Enquire Now
           </button>
-          <span className="text-purple-400 hidden sm:block">|</span>
+          {/* <span className="text-purple-400 hidden sm:block">|</span>
           <button 
             onClick={() => navigate('/book-now')} 
             className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
           >
             Book Now
-          </button>
+          </button> */}
         </div>
       </div>
       
